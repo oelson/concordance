@@ -144,6 +144,29 @@ function cleanReferenceList()
 }
 
 /*
+ * Surbrillance des résultats
+ */
+
+function highlightMatches(s)
+{
+    var q = document.createElement("blockquote"), e;
+    var pairs = s.split("_");
+    for (var i=0; i < pairs.length; ++i) {
+        // texte inchangé
+        t = document.createTextNode(pairs[i]);
+        // texte encadré
+        if (i%2) {
+            e = document.createElement("mark");
+            e.appendChild(t);
+        } else {
+            e = t;
+        }
+        q.appendChild(e);
+    }
+    return q;
+}
+
+/*
  * Affichage des références ayant correspondu à la recherche
  */
 
@@ -154,7 +177,8 @@ function displayVerse(ref, verse)
         td2 = document.createElement("td");
     var tbody = resultTable.tBodies[0];
     td1.appendChild(document.createTextNode(ref));
-    td2.appendChild(document.createTextNode(verse));
+    var q = highlightMatches(verse);
+    td2.appendChild(q);
     tr.appendChild(td1);
     tr.appendChild(td2);
     tbody.appendChild(tr);

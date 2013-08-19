@@ -137,6 +137,13 @@ class XMLBibleParser:
     def _prefix_matches(self, text):
         """
         """
+        # mots étants _tous_ obligatoires
+        for r in self.mandatory_keywords:
+            text = r.sub(r"_\1_", text)
+        # mots dont au moins un est nécessaire
+        if len(self.one_of_keywords) > 0:
+            for r in self.one_of_keywords:
+                text = r.sub(r"_\1_", text)
         return text
     
     def _compile_keyword_regex(self, s):

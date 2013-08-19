@@ -75,7 +75,7 @@ def handle(self, data):
     if "ran" in data:
         parser.add_number_in_range(data["ran"])
     # itère sur les versets correspondants
-    #parser.enable_highlighting("_")
+    parser.enable_highlighting("_")
     res = []
     for m in parser:
         ref = "{} {}.{}".format(m[0], m[1], m[2])
