@@ -60,7 +60,6 @@
   src: url(res/font/RobotoSlab-Bold.ttf);
 }
 
-
 /**
  * Style global
  */
@@ -74,7 +73,6 @@ body, input, textarea, select, button
 {
     font-family: Roboto, Sans;
     font-weight: 300;
-    -webkit-font-smoothing: antialiased;
 }
 
 header
@@ -85,18 +83,11 @@ header
     margin-bottom: .75em;
 }
 
-label, span, input
-{
-}
-
-select, button
-{
-}
-
 input
 {
-    border-width: 1px;
     padding: 2px;
+    border-width: 1px;
+    box-sizing: border-box;
 }
 
 fieldset
@@ -119,11 +110,6 @@ th
     color: grey;
 }
 
-form
-{
-    margin: 1em 0;
-}
-
 .gone
 {
     display: none !important;
@@ -140,13 +126,37 @@ form
 }
 
 /*
- * Filtre
+ * Disposition
  */
 
-form#filtre input
+table#layout
 {
-    box-sizing: border-box;
+    width: 100%;
+    border-spacing: 0;
 }
+
+table#layout > tbody > tr > td:nth-of-type(1)
+{
+    padding-right: 10px;
+}
+
+table#layout > tbody > tr > td
+{
+    vertical-align: top;
+}
+
+/*
+ * Liste des livres
+ */
+
+ol#book_list
+{
+    display: none;
+}
+
+/*
+ * Filtre
+ */
 
 form#filtre > table > tbody > tr > td
 {
@@ -266,7 +276,7 @@ table#resultats_recherche > tbody > tr > td:nth-of-type(2)
     font-family: RobotoSlab;
 }
 
-table#resultats_recherche > tbody > tr:hover
+table#resultats_recherche > tbody > tr:hover > td
 {
     background-color: #FFFCB0;
 }

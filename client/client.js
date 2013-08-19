@@ -33,7 +33,8 @@ var ress = "/bible";
  * Variables et objets globaux
  */
 
-var filterForm,
+var bookListOl,
+    filterForm,
     resultTable,
     filterBar,
     referenceSection,
@@ -41,81 +42,15 @@ var filterForm,
     resetButton,
     fullBibleReference,
     referenceErrorSpan,
-    caseInsensitiveCheckbox;
+    caseSensitiveCheckbox;
 
 var selectedReferences  = {};
 var displayedVerses = {};
 
-var bookIndex = [
-    "Genèse",
-    "Exode",
-    "Lévitique",
-    "Nombres",
-    "Deutéronome",
-    "Josué",
-    "Juges",
-    "Ruth",
-    "1 Samuel",
-    "2 Samuel",
-    "1 Rois",
-    "2 Rois",
-    "1 Chroniques",
-    "2 Chroniques",
-    "Esdras",
-    "Néhémie",
-    "Esther",
-    "Job",
-    "Psaumes",
-    "Proverbes",
-    "Ecclésiaste",
-    "Cantique des cantiques",
-    "Esaïe",
-    "Jérémie",
-    "Lamentations de Jérémie",
-    "Ezéchiel",
-    "Daniel",
-    "Osée",
-    "Joël",
-    "Amos",
-    "Abdias",
-    "Jonas",
-    "Michée",
-    "Nahum",
-    "Habakuk",
-    "Sophonie",
-    "Aggée",
-    "Zacharie",
-    "Malachie",
-    "Matthieu",
-    "Marc",
-    "Luc",
-    "Jean",
-    "Actes",
-    "Romains",
-    "1 Corinthiens",
-    "2 Corinthiens",
-    "Galates",
-    "Ephésiens",
-    "Philippiens",
-    "Colossiens",
-    "1 Thessaloniciens",
-    "2 Thessaloniciens",
-    "1 Timothée",
-    "2 Timothée",
-    "Tite",
-    "Philémon",
-    "Hébreux",
-    "Jacques",
-    "1 Pierre",
-    "2 Pierre",
-    "1 Jean",
-    "2 Jean",
-    "3 Jean",
-    "Jude",
-    "Apocalypse"
-];
+var bookIndex = [];
 
 var lastTimestampReceived = null;
+var connectInterval = null;
 
 /*
  * Récupère divers noeuds HTML dans des variables globales.
@@ -125,6 +60,7 @@ var lastTimestampReceived = null;
 function init()
 {
     // get
+    bookListOl = document.getElementById("book_list");
     filterForm = document.forms["filtre"];
     resultTable = document.getElementById("resultats_recherche");
     launchButton = document.getElementById("lancer");
@@ -133,8 +69,12 @@ function init()
     referenceSection = document.getElementById("liste_reference");
     fullBibleReference = document.getElementById("bible_entiere");
     referenceErrorSpan = document.getElementById("reference_error");
-    caseInsensitiveCheckbox = document.getElementById("filtre_case");
+    caseSensitiveCheckbox = document.getElementById("filtre_case");
     // action
+    var bookList = bookListOl.children;
+    for (var i=0; i < bookList.length; ++i) {
+        bookIndex.push(bookList[i].textContent);
+    }
     filterForm.addEventListener("submit", enu, false);
     filterForm.addEventListener("submit", requestServer, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
@@ -190,8 +130,12 @@ function removeReferenceFromList(e)
 function cleanReferenceList()
 {
     selectedReferences = {};
-    while (referenceSection.firstChild) {
-        referenceSection.removeChild(referenceSection.firstChild);
+    var spans = referenceSection.getElementsByClassName("reference");
+    for (var i=0, span; i < spans.length; ++i) {
+        span = spans[i];
+        if (!span.hasAttribute("id")) {
+            referenceSection.removeChild(span);
+        }
     }
     fullBibleReference.classList.remove("gone");
     toggleResetButton();
@@ -231,7 +175,6 @@ function cleanDisplayedVerses()
 function resetUI()
 {
     cleanDisplayedVerses();
-    cleanReferenceList();
     filterForm.reset();
 }
 
@@ -301,22 +244,9 @@ function isFormSubmitable()
     return false;
 }
 
-function countProperties(obj)
-{
-    var count = 0;
-
-    for(var prop in obj) {
-        if(obj.hasOwnProperty(prop))
-            ++count;
-    }
-
-    return count;
-}
-
 function isUICleanable()
 {
-    return countProperties(selectedReferences) > 0 ||
-           countProperties(displayedVerses) > 0;
+    return resultTable.tBodies[0].childElementCount > 1;
 }
 
 function toggleResetButton()
@@ -347,7 +277,7 @@ function requestServer()
         "now": new Date().getTime(),
         "ref": [],
         "tra": filterForm.elements["choix_traduction"].value,
-        "cas": caseInsensitiveCheckbox.value == "on" ? true : false
+        "cas": caseSensitiveCheckbox.checked
     };
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;
@@ -400,6 +330,10 @@ var s;
 
 function triggerConnected(e)
 {
+    if (connectInterval) {
+        clearInterval(connectInterval);
+        connectInterval = null;
+    }
     console.log("connected to the server: "+host+ress);
 }
 
@@ -420,13 +354,18 @@ function handleMessage(e)
 
 function handleError(e)
 {
-    s.close();
-    s = null;
+    if (s && s.readyState == WebSocket.OPEN) {
+        s.close();
+    }
 };
 
 function triggerClosed(e)
 {
     s = null;
+    console.log("connection closed");
+    if (!connectInterval) {
+        connectInterval = setInterval(connectToServer, 10000);
+    }
 }
 
 function connectToServer()
@@ -434,6 +373,7 @@ function connectToServer()
     if (s && s.readyState == WebSocket.OPEN) {
         s.close();
     }
+    console.log("trying to connect to the server");
     s = new WebSocket("ws://"+host+ress);	
     s.addEventListener("open",    triggerConnected, false);
     s.addEventListener("message", handleMessage, false);
@@ -444,6 +384,14 @@ function connectToServer()
     s.addEventListener("close", toggleLaunchButton, false);
     s.addEventListener("error", toggleLaunchButton, false);
 }
+
+/*
+ * Déconnexion propre en case de sortie de page
+ */
+
+window.addEventListener("beforeunload", function() {
+    if (s) s.close();
+}, false);
 
 /**
  * Classe décrivant une référence biblique.
@@ -483,7 +431,7 @@ function Reference(referenceStr)
      */
 
     this.parse = function() {
-        var fragments = this.referenceStr.split(/(\s+|\b)/).filter(this.filterWhiteStr);
+        var fragments = this.referenceStr.split(/\s+/).filter(this.filterWhiteStr);
         if (fragments.length < 1) return false;
         // nom du livre
         this.book = fragments[0];
@@ -496,6 +444,7 @@ function Reference(referenceStr)
         }
         // vérification du nom du livre
         if (bookIndex.indexOf(this.book) == -1) {
+            console.log(fragments);
             return false;
         }
         // chapitre

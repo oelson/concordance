@@ -4,71 +4,153 @@
     <meta charset="utf-8"/>
     <link rel="stylesheet" href="client.css"/>
     <script src="client.js"></script>
+    <title>Concordance biblique</title>
 </head>
 <body>
+    <ol id="book_list">
+        <li>Genèse</li>
+        <li>Exode</li>
+        <li>Lévitique</li>
+        <li>Nombres</li>
+        <li>Deutéronome</li>
+        <li>Josué</li>
+        <li>Juges</li>
+        <li>Ruth</li>
+        <li>1 Samuel</li>
+        <li>2 Samuel</li>
+        <li>1 Rois</li>
+        <li>2 Rois</li>
+        <li>1 Chroniques</li>
+        <li>2 Chroniques</li>
+        <li>Esdras</li>
+        <li>Néhémie</li>
+        <li>Esther</li>
+        <li>Job</li>
+        <li>Psaumes</li>
+        <li>Proverbes</li>
+        <li>Ecclésiaste</li>
+        <li>Cantique des cantiques</li>
+        <li>Esaïe</li>
+        <li>Jérémie</li>
+        <li>Lamentations de Jérémie</li>
+        <li>Ezéchiel</li>
+        <li>Daniel</li>
+        <li>Osée</li>
+        <li>Joël</li>
+        <li>Amos</li>
+        <li>Abdias</li>
+        <li>Jonas</li>
+        <li>Michée</li>
+        <li>Nahum</li>
+        <li>Habakuk</li>
+        <li>Sophonie</li>
+        <li>Aggée</li>
+        <li>Zacharie</li>
+        <li>Malachie</li>
+        <li>Matthieu</li>
+        <li>Marc</li>
+        <li>Luc</li>
+        <li>Jean</li>
+        <li>Actes</li>
+        <li>Romains</li>
+        <li>1 Corinthiens</li>
+        <li>2 Corinthiens</li>
+        <li>Galates</li>
+        <li>Ephésiens</li>
+        <li>Philippiens</li>
+        <li>Colossiens</li>
+        <li>1 Thessaloniciens</li>
+        <li>2 Thessaloniciens</li>
+        <li>1 Timothée</li>
+        <li>2 Timothée</li>
+        <li>Tite</li>
+        <li>Philémon</li>
+        <li>Hébreux</li>
+        <li>Jacques</li>
+        <li>1 Pierre</li>
+        <li>2 Pierre</li>
+        <li>1 Jean</li>
+        <li>2 Jean</li>
+        <li>3 Jean</li>
+        <li>Jude</li>
+        <li>Apocalypse</li>
+    </ol>
     <header>Concordance biblique</header>
-    <form id="filtre">
-        <table>
-        <tbody>
-            <tr>
-                <th colspan="2">Rechercher des versets&hellip;</th>
-            </tr>
-            <tr>
-                <td><label for="choix_traduction">traduction à utiliser&nbsp;:</label></td>
-                <td>
-                    <select id="choix_traduction">
-                        <option value="Darby">John Nelson Darby</option>
-                        <option value="LS10">Louis-Second 1910</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td><label for="filtre_reference">dans les passages suivants&nbsp;:</label></td>
-                <td>
-                    <section class="relative">
-                        <input class="expand" id="filtre_reference" size="30" placeholder="Entrez une référence biblique&hellip;" />
-                        <section id="suggestion_reference" class="gone">
-                            <img src="res/img/close.gif" width="10" height="10" class="close" />
-                        </section>
-                    </section>
-                    <section id="liste_reference"><span id="bible_entiere" class="reference">La Bible entière<span class="delete"></span></span></section>
-                </td>
-                <td><span id="reference_error">La référence saisie n'est pas valide</span></td>
-            </tr>
-            <tr>
-                <td><label for="filtre_quelconque">l'un des mots suivants&nbsp;:</label></td>
-                <td><input class="expand" name="quelconque" id="filtre_quelconque" size="30" placeholder="mot1 mot2&hellip;"/></td>
-            </tr>
-            <tr>
-                <td><label for="filtre_conjonction">tous les mots suivants&nbsp;:</label></td>
-                <td><input class="expand" name="conjonction" id="filtre_conjonction" size="30" placeholder="mot1 mot2&hellip;"/></td>
-            </tr>
-            <tr>
-                <td><label for="filtre_aucun">aucun des mots suivants&nbsp;:</label></td>
-                <td><input class="expand" name="aucun" id="filtre_aucun" size="30" placeholder="mot1 mot2&hellip;"/></td>
-            </tr>
-            <tr>
-                <td><label for="filtre_nombres_min">nombres compris entre&nbsp;:</label></td>
-                <td><input name="nombres_min" id="filtre_nombres_min" type="number" min="0"/><span>&nbsp;et&nbsp;</span><input name="nombres_max" id="filtre_nombres_max" type="number" min="0"/></td>
-            </tr>
-            <tr>
-                <td><label for="filtre_case">insensible à la case&nbsp;:</label></td>
-                <td><input name="filtre_case" id="filtre_case" type="checkbox" checked="checked"/></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button id="lancer" disabled="disabled">Rechercher</button>
-                    <button id="effacer" disabled="disabled">Effacer</button>
-                </td>
-            </tr>
-        </tbody>
-        </table>
-    </form>
-    <table id="resultats_recherche" class="gone">
+    <table id="layout">
     <tbody>
         <tr>
-            <th>Référence</th>
-            <th>Verset</th>
+            <!-- panneau de gauche -->
+            <td>
+                <form id="filtre">
+                    <table>
+                    <tbody>
+                        <tr>
+                            <th colspan="2">Rechercher des versets&hellip;</th>
+                        </tr>
+                        <tr>
+                            <td><label for="choix_traduction">traduction à utiliser&nbsp;:</label></td>
+                            <td>
+                                <select id="choix_traduction">
+                                    <option value="Darby">John Nelson Darby</option>
+                                    <option value="LS10">Louis-Second 1910</option>
+                                </select>
+                                <span id="reference_error">La référence saisie n'est pas valide</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_reference">dans les passages suivants&nbsp;:</label></td>
+                            <td>
+                                <section class="relative">
+                                    <input class="expand" id="filtre_reference" size="20" placeholder="Entrez une référence biblique&hellip;" />
+                                    <section id="suggestion_reference" class="gone">
+                                        <img src="res/img/close.gif" width="10" height="10" class="close" />
+                                    </section>
+                                </section>
+                                <section id="liste_reference"><span id="bible_entiere" class="reference">La Bible entière<span class="delete"></span></span></section>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_quelconque">l'un des mots suivants&nbsp;:</label></td>
+                            <td><input class="expand" name="quelconque" id="filtre_quelconque" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_conjonction">tous les mots suivants&nbsp;:</label></td>
+                            <td><input class="expand" name="conjonction" id="filtre_conjonction" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_aucun">aucun des mots suivants&nbsp;:</label></td>
+                            <td><input class="expand" name="aucun" id="filtre_aucun" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_nombres_min">nombres compris entre&nbsp;:</label></td>
+                            <td><input name="nombres_min" id="filtre_nombres_min" type="number" min="0" max="100000"/><span>&nbsp;et&nbsp;</span><input name="nombres_max" id="filtre_nombres_max" type="number" min="0" max="100000"/></td>
+                        </tr>
+                        <tr>
+                            <td><label for="filtre_case">sensible à la case&nbsp;:</label></td>
+                            <td><input name="filtre_case" id="filtre_case" type="checkbox"/></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <button id="lancer" disabled="disabled">Rechercher</button>
+                                <button id="effacer" disabled="disabled">Effacer</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                    </table>
+                </form>
+            
+            </td>
+            <!-- panneau de droite -->
+            <td>
+                <table id="resultats_recherche" class="gone">
+                <tbody>
+                    <tr>
+                        <th>Référence</th>
+                        <th>Verset</th>
+                    </tr>
+                </tbody>
+                </table>
+            </td>
         </tr>
     </tbody>
     </table>
