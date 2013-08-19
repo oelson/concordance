@@ -98,7 +98,7 @@ function enu(e) { e.preventDefault(); }
  * Liste des références sélectionnées
  */
 
-function addReferenceToList(reference)
+function addVerseToList(reference)
 {
     var ctn = document.createElement("span"),
         del = document.createElement("span");
@@ -200,7 +200,7 @@ function handleFilterBarKeyDown(e)
     if (e.keyIdentifier == "Enter") {
         var ref = new Reference(s);
         if (ref.parse()) {
-            addReferenceToList(ref);
+            addVerseToList(ref);
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
         } else {
