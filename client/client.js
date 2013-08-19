@@ -42,7 +42,8 @@ var bookListOl,
     resetButton,
     fullBibleReference,
     referenceErrorSpan,
-    caseSensitiveCheckbox;
+    caseSensitiveCheckbox,
+    spinnerImg;
 
 var selectedReferences  = {};
 var displayedVerses = {};
@@ -70,6 +71,7 @@ function init()
     fullBibleReference = document.getElementById("bible_entiere");
     referenceErrorSpan = document.getElementById("reference_error");
     caseSensitiveCheckbox = document.getElementById("filtre_case");
+    spinnerImg = document.getElementById("spinner");
     // action
     var bookList = bookListOl.children;
     for (var i=0; i < bookList.length; ++i) {
@@ -334,7 +336,7 @@ function triggerConnected(e)
         clearInterval(connectInterval);
         connectInterval = null;
     }
-    console.log("connected to the server: "+host+ress);
+    spinnerImg.classList.add("gone");
 }
 
 function handleMessage(e)
@@ -362,10 +364,10 @@ function handleError(e)
 function triggerClosed(e)
 {
     s = null;
-    console.log("connection closed");
     if (!connectInterval) {
         connectInterval = setInterval(connectToServer, 10000);
     }
+    spinnerImg.classList.remove("gone");
 }
 
 function connectToServer()

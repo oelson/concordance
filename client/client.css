@@ -126,6 +126,15 @@ th
 }
 
 /*
+ * Spinner
+ */
+
+img#spinner
+{
+    vertical-align: text-bottom;
+}
+
+/*
  * Disposition
  */
 
