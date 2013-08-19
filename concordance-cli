@@ -1,0 +1,79 @@
+#!/usr/bin/python3
+"""
+Outil de manipulation des textes bibliques:
+  * Recherche par mot-clé des verset
+  * Sélectionne des versets par leur référence
+  * Construit le contexte lexical de la recherche
+"""
+
+import os
+import sys
+import argparse
+
+from bible     import XMLBibleParser
+from lexicon   import LexicalContext
+from xml.etree import ElementTree
+
+"""
+Gestion des options
+"""
+
+parser = argparse.ArgumentParser(description="Un outil de manipulation des textes bibliques")
+
+# Arguments positionnels
+parser.add_argument("xml", metavar="XML",
+                    help="path to the bible xml; use environment variable BIBLE_XML_DIRECTORY and truncate the '.xml' suffix to shorten the argument")
+parser.add_argument("references", metavar="search", nargs="*",
+                    help="a list of verse's reference to extract")
+# Options
+parser.add_argument("-k", "--keywords", dest="keywords", nargs="+",
+                    help="a list of keywords the verses should match")
+parser.add_argument("-p", "--print-text", dest="print_verses_text",
+                    action="store_true", default=False,
+                    help="print verses' text after their reference")
+parser.add_argument("-i", "--ignore-case", dest="ignore_case",
+                    action="store_true", default=False,
+                    help="ignore case while searching")
+parser.add_argument("-c", "--lexical-context", dest="lexicon", metavar="N",
+                    help="display the lexical context of matching verses up to N items by order of importance descending")
+
+args = parser.parse_args()
+
+
+if __name__ == "__main__":
+    """
+    Instancie le DOM de la bible sélectionnée et procède aux traitements
+    """
+    # Utilise une variable d'environnement pour raccourcir les appels du
+    # programme en ligne de commande
+    bible_directory = os.environ.get("BIBLE_XML_DIRECTORY")
+    if bible_directory is not None:
+        xml_path = "{}/{}.xml".format(
+            bible_directory,
+            args.xml
+        )
+    else:
+        xml_path = options.xml
+    try:
+        bible = ElementTree.parse(xml_path)
+    except:
+        print('unreadable bible XML "{}"'.format(xml_path))
+        sys.exit(2)
+    # Construit le contexte lexical des versets rencontrés
+    if args.lexicon:
+        lexicon = LexicalContext(args.lexicon)
+    else:
+        lexicon = None
+    p = XMLBibleParser(
+        bible,
+        args.references,
+        args.keywords,
+        args.ignore_case,
+        lexicon
+    )
+    for v in p:
+        if not lexicon:
+            print(v)
+    if lexicon:
+        print(lexicon)
+

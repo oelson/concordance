@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="client.css"/>
+    <script src="client.js"></script>
+</head>
+<body>
+    <header>Concordance biblique</header>
+    <form id="filtre">
+        <table>
+        <tbody>
+            <tr>
+                <th colspan="2">Rechercher des versets&hellip;</th>
+            </tr>
+            <tr>
+                <td><label for="choix_traduction">traduction à utiliser&nbsp;:</label></td>
+                <td>
+                    <select id="choix_traduction">
+                        <option value="Darby">John Nelson Darby</option>
+                        <option value="LS10">Louis-Second 1910</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="filtre_reference">dans les passages suivants&nbsp;:</label></td>
+                <td>
+                    <section class="relative">
+                        <input class="expand" id="filtre_reference" size="30" placeholder="Entrez une référence biblique&hellip;" />
+                        <section id="suggestion_reference" class="gone">
+                            <img src="res/img/close.gif" width="10" height="10" class="close" />
+                        </section>
+                    </section>
+                    <section id="liste_reference"><span id="bible_entiere" class="reference">La Bible entière<span class="delete"></span></span></section>
+                </td>
+                <td><span id="reference_error">La référence saisie n'est pas valide</span></td>
+            </tr>
+            <tr>
+                <td><label for="filtre_quelconque">l'un des mots suivants&nbsp;:</label></td>
+                <td><input class="expand" name="quelconque" id="filtre_quelconque" size="30" placeholder="mot1 mot2&hellip;"/></td>
+            </tr>
+            <tr>
+                <td><label for="filtre_conjonction">tous les mots suivants&nbsp;:</label></td>
+                <td><input class="expand" name="conjonction" id="filtre_conjonction" size="30" placeholder="mot1 mot2&hellip;"/></td>
+            </tr>
+            <tr>
+                <td><label for="filtre_aucun">aucun des mots suivants&nbsp;:</label></td>
+                <td><input class="expand" name="aucun" id="filtre_aucun" size="30" placeholder="mot1 mot2&hellip;"/></td>
+            </tr>
+            <tr>
+                <td><label for="filtre_nombres_min">nombres compris entre&nbsp;:</label></td>
+                <td><input name="nombres_min" id="filtre_nombres_min" type="number" min="0"/><span>&nbsp;et&nbsp;</span><input name="nombres_max" id="filtre_nombres_max" type="number" min="0"/></td>
+            </tr>
+            <tr>
+                <td><label for="filtre_case">insensible à la case&nbsp;:</label></td>
+                <td><input name="filtre_case" id="filtre_case" type="checkbox" checked="checked"/></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button id="lancer" disabled="disabled">Rechercher</button>
+                    <button id="effacer" disabled="disabled">Effacer</button>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+    </form>
+    <table id="resultats_recherche" class="gone">
+    <tbody>
+        <tr>
+            <th>Référence</th>
+            <th>Verset</th>
+        </tr>
+    </tbody>
+    </table>
+</body>
+</html>

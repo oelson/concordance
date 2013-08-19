@@ -1,0 +1,272 @@
+/**
+ * Polices de caractères
+ */
+
+/* Sans */
+@font-face
+{
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url(res/font/Roboto-normal.woff) format('woff');
+}
+
+@font-face
+{
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: url(res/font/Roboto-bold.woff) format('woff');
+}
+
+@font-face
+{
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  src: url(res/font/Roboto-light.woff) format('woff');
+}
+
+/* Sans-Serif */
+@font-face
+{
+  font-family: 'RobotoSlab';
+  font-style: normal;
+  font-weight: 200;
+  src: url(res/font/RobotoSlab-Thin.ttf);
+}
+
+@font-face
+{
+  font-family: 'RobotoSlab';
+  font-style: normal;
+  font-weight: 300;
+  src: url(res/font/RobotoSlab-Light.ttf);
+}
+
+@font-face
+{
+  font-family: 'RobotoSlab';
+  font-style: normal;
+  font-weight: 400;
+  src: url(res/font/RobotoSlab-Regular.ttf);
+}
+
+@font-face
+{
+  font-family: 'RobotoSlab';
+  font-style: normal;
+  font-weight: 700;
+  src: url(res/font/RobotoSlab-Bold.ttf);
+}
+
+
+/**
+ * Style global
+ */
+
+body
+{
+    font-size: 13px;
+}
+
+body, input, textarea, select, button
+{
+    font-family: Roboto, Sans;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+}
+
+header
+{
+    font-size: 1.75em;
+    border-bottom: 2px solid grey;
+    color: grey;
+    margin-bottom: .75em;
+}
+
+label, span, input
+{
+}
+
+select, button
+{
+}
+
+input
+{
+    border-width: 1px;
+    padding: 2px;
+}
+
+fieldset
+{
+    display: inline-block;
+    width: 0;
+    border: 1px solid grey;
+    color: grey;
+}
+
+label
+{
+    color: black;
+}
+
+th
+{
+    font-weight: normal;
+    text-align: left;
+    color: grey;
+}
+
+form
+{
+    margin: 1em 0;
+}
+
+.gone
+{
+    display: none !important;
+}
+
+.relative
+{
+    position: relative;
+}
+
+.expand
+{
+    width: 100%;
+}
+
+/*
+ * Filtre
+ */
+
+form#filtre input
+{
+    box-sizing: border-box;
+}
+
+form#filtre > table > tbody > tr > td
+{
+    white-space: nowrap;
+    vertical-align: top;
+}
+
+/*
+ * Références
+ */
+
+span.reference
+{
+    display: inline-block;
+    padding: 6px 28px 6px 8px;
+    background-color: #4285F4;
+    border-radius: 10px;
+    color: white;
+    cursor: default;
+    box-shadow: 1px 1px 2px rgba(0,0,0,.5);
+    text-shadow: 1px -1px 1px rgb(127,127,127);
+    margin: 8px 8px 0 0;
+    position: relative;
+}
+
+span.delete
+{
+    position: absolute;
+    right: 6px;
+    top:   6px;
+    display: inline-block;
+    width:  16px;
+    height: 16px;
+    opacity: .66;
+    background-image: url("res/img/close-button.png");
+}
+
+span.delete:hover
+{
+    opacity: 1;
+}
+
+/*
+ * Message d'erreur
+ */
+
+span#reference_error
+{
+    cursor: default;
+    white-space: nowrap;
+    color: transparent;
+    font-weight: 700;
+   -webkit-transition: color .5s ease-in;  
+   -moz-transition: color .5s ease-in;  
+   -o-transition: color .5s ease-in;  
+   transition: color .5s ease-in;
+}
+
+span#reference_error.error
+{
+    color: red;
+}
+
+/*
+ * Suggestion de livre
+ */
+
+section#suggestion_reference
+{
+    width: 100%;
+    position: absolute;
+    background-color: white;
+    border: 1px outset rgb(240,240,240);
+    box-shadow: 1px 1px 5px rgba(0,0,0,.25);
+}
+
+section#suggestion_reference > li
+{
+    cursor: default;
+    padding: 3px 6px;
+    display: block;
+    list-style-type: none;
+}
+
+section#suggestion_reference > li:hover
+{
+    background-color: #FFFCB0;
+}
+
+section#suggestion_reference > img.close
+{
+    padding: 5px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+
+/*
+ * Résultats de recherche
+ */
+
+table#resultats_recherche
+{
+    border-spacing: 0;
+}
+
+table#resultats_recherche > tbody > tr > td:nth-of-type(1)
+{
+    white-space: nowrap;
+    vertical-align: top;
+    padding-right: 10px;
+}
+
+table#resultats_recherche > tbody > tr > td:nth-of-type(2)
+{
+    font-family: RobotoSlab;
+}
+
+table#resultats_recherche > tbody > tr:hover
+{
+    background-color: #FFFCB0;
+}

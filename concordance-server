@@ -1,0 +1,130 @@
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+# 
+# "Bible Index" Python3 WebSocket server.
+#
+# Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+import json
+import os
+import signal
+import sys
+
+from BibleParser.XMLBibleParser import XMLBibleParser
+from time import time, sleep
+from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
+from xml.etree import ElementTree
+
+def init(self):
+    """
+    Ajoute au thread un dictionnaire qui contiendra les différents parseurs
+    """
+    self.bibles = {}
+
+def handle(self, data):
+    """
+    Récupère un message JSON de la connection WebSocket
+    """
+    data = json.loads(data)
+    # traduction de la bible à utiliser pour la recherche
+    if "tra" not in data or data["tra"] not in bible_translations:
+        self.error("no or bad translation given")
+        return
+    # instancie un parser si nécessaire
+    if data["tra"] not in self.bibles:
+        self.info("new bible '{}'".format(data["tra"]))
+        self.bibles[data["tra"]] = XMLBibleParser(
+            os.path.join(
+                bible_xml_directory,
+                data["tra"]+".xml"
+            )
+        )
+    parser = self.bibles[data["tra"]]
+    # ajoute les références
+    parser.clean()
+    for r in data["ref"]:
+        parser.add_reference(r)
+    # recherche tous les mots suivants
+    if "all" in data:
+        parser.add_mandatory_keywords(data["all"])
+    # recherche au moins un des mots suivants
+    if "one" in data:
+        parser.add_one_of_keywords(data["one"])
+    # évite tous les mots suivants
+    if "non" in data:
+        parser.add_none_of_keywords(data["non"])
+    # recherche un nombre compris dans un intervalle
+    if "ran" in data:
+        parser.add_number_in_range(data["ran"])
+    # sensibilité à la case
+    if "cas" in data:
+        parser.set_case_insensitivity(data["cas"])
+    # Itère sur les versets correspondants
+    res = []
+    for m in parser:
+        ref = "{} {}.{}".format(m[0], m[1], m[2])
+        res.append({
+            "ref": ref,
+            "verse": m[3]
+        })
+    resp = {"res": res, "now": int(round(time() * 1000))}
+    resp = json.dumps(resp)
+    self.send(resp)
+
+
+"""
+Obtention de la liste des fichier XML disponnibles
+"""
+bible_translations  = []
+bible_xml_directory = os.environ.get("BIBLE_XML_DIRECTORY")
+
+if not bible_xml_directory:
+    sys.exit(
+        status=1,
+        msg="env variable 'BIBLE_XML_DIRECTORY' must be set"
+    )
+
+os.chdir(bible_xml_directory)
+
+for files in os.listdir("."):
+    if files.endswith(".xml"):
+        bible_translations.append(files[:-4])
+
+"""
+Instancie le serveur websocket de la concordance
+"""
+server = WebSocketServer.server(
+    addr="",
+    host="localhost",
+    port=8080,
+    init=init,
+    handle=handle,
+    debug=WebSocketCode.WebSocketDebugLevel.PRINT_ERROR
+)
+
+# Arrête le serveur en cas de réception de SIGINT(2) ou de SIGTERM(15)
+def die(signum, frame):
+    server.stop()
+
+signal.signal(signal.SIGINT,  die)
+signal.signal(signal.SIGTERM, die)
+
+server.start()
+
+while server.is_alive():
+    signal.pause()
