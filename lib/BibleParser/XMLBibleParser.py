@@ -26,7 +26,8 @@ class XMLBibleParser:
     
     references = {}
     
-    case_insensitive = False
+    _case_sensitive   = False
+    _highlight_prefix = None
     
     class ReferenceError(ValueError):
         pass
@@ -108,16 +109,16 @@ class XMLBibleParser:
             return greatest
         return int(greatest.attrib["n"])
 
-    def verse_match_rules(self, verse):
+    def _verse_match_rules(self, verse):
         """
         Cherche à reconnaitre au moins un mot-clé dans le verset donné en
         argument.
         """
-        # Mots étants _tous_ obligatoires
+        # mots étants _tous_ obligatoires
         for r in self.mandatory_keywords:
             if not r.search(verse):
                 return False
-        # Mots dont au moins un est nécessaire
+        # mots dont au moins un est nécessaire
         if len(self.one_of_keywords) > 0:
             one_found = False
             for r in self.one_of_keywords:
@@ -126,21 +127,29 @@ class XMLBibleParser:
                     break
             if not one_found:
                 return False
-        # Mots interdits
+        # mots interdits
         for r in self.none_of_keywords:
             if r.search(verse):
                 return False
+        # TODO range
         return True
+    
+    def _prefix_matches(self, text):
+        """
+        """
+        return text
     
     def _compile_keyword_regex(self, s):
         """
         Compile une expression régulière détectant un mot délimité, avec ou sans
         sensibilité à la case.
         """
-        if self.case_insensitive:
-            return re.compile(s, re.I)
-        else:
+        # Capture et délimite le mot à chercher
+        s = r"(\b"+re.escape(s)+r"\b)"
+        if self._case_sensitive:
             return re.compile(s)
+        else:
+            return re.compile(s, re.I)
     
     def add_mandatory_keywords(self, words):
         """
@@ -175,11 +184,11 @@ class XMLBibleParser:
             raise ValueError("the range is not valid")
         self.number_ranges.append((l,h))
     
-    def set_case_insensitivity(self, insensitive):
+    def set_case_sensitivity(self, sensitive):
         """
         Active ou non l'insensibilité à la case.
         """
-        self.case_insensitive = insensitive
+        self._case_sensitive = sensitive
     
     def clean(self):
         """
@@ -191,6 +200,38 @@ class XMLBibleParser:
         self.none_of_keywords.clear()
         self.number_ranges.clear()
     
+    def enable_highlighting(self, s):
+        """
+        Préfixe et suffixe les correspondances dans les versets retournés par
+        une chaîne.
+        """
+        self._highlight_prefix = s
+
+    def disable_highlighting(self):
+        """
+        """
+        self._highlight_prefix = None
+
+    def _parse_verse(self, book, chapter, verse):
+        """
+        """
+        if verse.text is None:
+            return
+        # barrière de concordance avec les mots-clés
+        if not self._verse_match_rules(verse.text):
+            return
+        # mise-à-jour du lexique
+        if self.lexicon:
+            self.lexicon.update(verse.text)
+        text = verse.text if self._highlight_prefix is None else \
+               self._prefix_matches(verse.text)
+        return (
+            book.attrib["n"],
+            int(chapter.attrib["n"]),
+            int(verse.attrib["n"]),
+            text
+        )
+
     def __iter__(self):
         """
         Recherche dans la bible à partir de références et les retournes une 
@@ -201,19 +242,9 @@ class XMLBibleParser:
             for book in self.bible.iterfind("./b"):
                 for chapter in book.iterfind("./c"):
                     for verse in chapter.iterfind("./v"):
-                        if verse.text is None:
-                            continue
-                        # Barrière de concordance avec les mots-clés
-                        if not self.verse_match_rules(verse.text):
-                            continue
-                        # Mise-à-jour du lexique
-                        if self.lexicon:
-                            self.lexicon.update(verse.text)
-                        else:
-                            yield (book.attrib["n"],
-                                   int(chapter.attrib["n"]),
-                                   int(verse.attrib["n"]),
-                                   verse.text)
+                        res = self._parse_verse(book, chapter, verse)
+                        if res is not None:
+                            yield res
         # Parcours uniquement des références précises
         else:
             for reference in self.references:
@@ -273,14 +304,6 @@ class XMLBibleParser:
                                     verse_index
                                 )
                             )
-                        # Barrière de concordance avec les mots-clés
-                        if not self.verse_match_rules(verse.text):
-                            continue
-                        # Mise-à-jour du lexique
-                        if self.lexicon:
-                            self.lexicon.update(verse.text)
-                        else:
-                            yield (book.attrib["n"],
-                                   int(chapter.attrib["n"]),
-                                   int(verse.attrib["n"]),
-                                   verse.text)
+                        res = self._parse_verse(book, chapter, verse)
+                        if res is not None:
+                            yield res
