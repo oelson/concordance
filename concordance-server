@@ -55,8 +55,11 @@ def handle(self, data):
             )
         )
     parser = self.bibles[data["tra"]]
-    # ajoute les références
     parser.clean()
+    # sensibilité à la case
+    if "cas" in data:
+        parser.set_case_sensitivity(data["cas"])
+    # ajoute les références
     for r in data["ref"]:
         parser.add_reference(r)
     # recherche tous les mots suivants
@@ -71,10 +74,8 @@ def handle(self, data):
     # recherche un nombre compris dans un intervalle
     if "ran" in data:
         parser.add_number_in_range(data["ran"])
-    # sensibilité à la case
-    if "cas" in data:
-        parser.set_case_insensitivity(data["cas"])
-    # Itère sur les versets correspondants
+    # itère sur les versets correspondants
+    #parser.enable_highlighting("_")
     res = []
     for m in parser:
         ref = "{} {}.{}".format(m[0], m[1], m[2])
@@ -86,7 +87,6 @@ def handle(self, data):
     resp = json.dumps(resp)
     self.send(resp)
 
-
 """
 Obtention de la liste des fichier XML disponnibles
 """
@@ -94,13 +94,11 @@ bible_translations  = []
 bible_xml_directory = os.environ.get("BIBLE_XML_DIRECTORY")
 
 if not bible_xml_directory:
-    sys.exit(
-        status=1,
-        msg="env variable 'BIBLE_XML_DIRECTORY' must be set"
-    )
+    print("env variable 'BIBLE_XML_DIRECTORY' must be set", file=sys.stderr)
+    sys.exit(1)
 
+# Liste les fichiers XML
 os.chdir(bible_xml_directory)
-
 for files in os.listdir("."):
     if files.endswith(".xml"):
         bible_translations.append(files[:-4])
@@ -119,6 +117,10 @@ server = WebSocketServer.server(
 
 # Arrête le serveur en cas de réception de SIGINT(2) ou de SIGTERM(15)
 def die(signum, frame):
+    # Signale aux clients qu'ils doivent envoyer un message de déconnexion
+    # propre
+    for t in server.clients:
+        t.setCloseStatus(WebSocketCode.CloseFrameStatusCode.GOING_AWAY)
     server.stop()
 
 signal.signal(signal.SIGINT,  die)
