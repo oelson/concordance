@@ -100,7 +100,17 @@ function enu(e) { e.preventDefault(); }
  * Liste des références sélectionnées
  */
 
-function addReferenceToList(reference)
+function addReference(reference)
+{
+    // met-à-jour la liste des références
+    selectedReferences[reference.serialize()] = reference;
+    addReferenceLabel(reference);
+    // masque la référence globale
+    fullBibleReference.classList.add("gone");
+    toggleResetButton();
+}
+
+function addReferenceLabel(reference)
 {
     var ctn = document.createElement("span"),
         del = document.createElement("span");
@@ -108,18 +118,14 @@ function addReferenceToList(reference)
     var s = reference.serialize();
     ctn.appendChild(document.createTextNode(s));
     del.classList.add("delete");
-    del.addEventListener("click", removeReferenceFromList, false);
-    ctn.appendChild(del);
+    del.addEventListener("click", removeReference, false);
+    // rétrolien pour la mise-à-jour de la liste en cas de suppression
     del.reference = s;
+    ctn.appendChild(del);
     referenceSection.appendChild(ctn);
-    // sauvegarde la référence dans un dictionnaire
-    selectedReferences[s] = ctn;
-    // masque la référence globale
-    fullBibleReference.classList.add("gone");
-    toggleResetButton();
 }
 
-function removeReferenceFromList(e)
+function removeReference(e)
 {
     delete selectedReferences[e.target.reference];
     referenceSection.removeChild(e.target.parentNode);
@@ -224,9 +230,9 @@ function handleFilterBarKeyDown(e)
     var s = filterBar.value;
     // Ajout de la référence
     if (e.keyIdentifier == "Enter") {
-        var ref = new Reference(s);
-        if (ref.parse()) {
-            addReferenceToList(ref);
+        var reference = new Reference(s);
+        if (reference.parse()) {
+            addReference(reference);
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
         } else {

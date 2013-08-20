@@ -289,3 +289,8 @@ table#resultats_recherche > tbody > tr:hover > td
 {
     background-color: #FFFCB0;
 }
+
+blockquote
+{
+    margin: 0;
+}
