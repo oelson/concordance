@@ -112,7 +112,7 @@ server = WebSocketServer.server(
     port=8080,
     init=init,
     handle=handle,
-    debug=WebSocketCode.WebSocketDebugLevel.PRINT_ERROR
+    debug=WebSocketCode.WebSocketDebugLevel.PRINT_NOTHING
 )
 
 # Arrête le serveur en cas de réception de SIGINT(2) ou de SIGTERM(15)

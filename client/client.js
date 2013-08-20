@@ -405,7 +405,6 @@ function connectToServer()
     if (s && s.readyState == WebSocket.OPEN) {
         s.close();
     }
-    console.log("trying to connect to the server");
     s = new WebSocket("ws://"+host+ress);	
     s.addEventListener("open",    triggerConnected, false);
     s.addEventListener("message", handleMessage, false);
@@ -476,7 +475,6 @@ function Reference(referenceStr)
         }
         // vérification du nom du livre
         if (bookIndex.indexOf(this.book) == -1) {
-            console.log(fragments);
             return false;
         }
         // chapitre
