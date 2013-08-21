@@ -153,14 +153,16 @@ class XMLBibleParser:
     
     def _prefix_matches(self, text):
         """
+        Ajoute aux mots-clés trouvés dans le texte un préfixe et un suffixe.
         """
+        p = self._highlight_prefix + r"\1" + self._highlight_prefix
         # mots étants _tous_ obligatoires
         for r in self._mandatory_keywords:
-            text = r.sub(r"_\1_", text)
+            text = r.sub(p, text)
         # mots dont au moins un est nécessaire
         if len(self._one_of_keywords) > 0:
             for r in self._one_of_keywords:
-                text = r.sub(r"_\1_", text)
+                text = r.sub(p, text)
         return text
     
     def _compile_keyword_regex(self, s):

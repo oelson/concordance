@@ -80,8 +80,9 @@ def handle(self, data):
     # recherche un nombre compris dans un intervalle
     if "ran" in data:
         parser.add_number_in_range(data["ran"])
-    # itère sur les versets correspondants
+    # préfixe les résultats par des tirets
     parser.enable_highlighting("_")
+    # itère sur les versets correspondants
     res = []
     for m in parser:
         ref = "{} {}.{}".format(m[0], m[1], m[2])
