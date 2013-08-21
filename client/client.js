@@ -41,9 +41,10 @@ var bookListOl,
     launchButton,
     resetButton,
     fullBibleReference,
+    suggestionListSection,
     referenceErrorSpan,
-    caseSensitiveCheckbox,
-    spinnerImg;
+    spinnerImg,
+    suggestionCloseImg;
 
 var selectedReferences  = {};
 var displayedVerses = {};
@@ -69,9 +70,10 @@ function init()
     filterBar = document.getElementById("filtre_reference");
     referenceSection = document.getElementById("liste_reference");
     fullBibleReference = document.getElementById("bible_entiere");
+    suggestionListSection = document.getElementById("suggestion_reference");
     referenceErrorSpan = document.getElementById("reference_error");
-    caseSensitiveCheckbox = document.getElementById("filtre_case");
     spinnerImg = document.getElementById("spinner");
+    suggestionCloseImg = document.getElementById("suggestion_close");
     // action
     var bookList = bookListOl.children;
     for (var i=0; i < bookList.length; ++i) {
@@ -82,6 +84,7 @@ function init()
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
     resetButton.addEventListener("click", resetUI, false);
+    suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // WS
     connectToServer();
 }
@@ -207,6 +210,7 @@ function cleanDisplayedVerses()
 function resetUI()
 {
     cleanDisplayedVerses();
+    clearBookSuggestion();
     filterForm.reset();
 }
 
@@ -221,28 +225,26 @@ function handleFilterBarKeyUp(e)
         // Éffacement complet du champs
         if (!filterBar.value) {
             referenceErrorSpan.classList.remove("error");
+            hideBookSuggestion();
         }
     }
+    suggestBook(filterBar.value);
 }
 
 function handleFilterBarKeyDown(e)
 {
-    var s = filterBar.value;
     // Ajout de la référence
     if (e.keyIdentifier == "Enter") {
-        var reference = new Reference(s);
+        var reference = new Reference(filterBar.value);
         if (reference.parse()) {
             addReference(reference);
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
+            hideBookSuggestion();
         } else {
             signalReferenceError();
         }
         e.preventDefault();
-    }
-    // Prédiction
-    else {
-        suggestBook(s);
     }
 }
 
@@ -252,7 +254,55 @@ function handleFilterBarKeyDown(e)
 
 function suggestBook(input)
 {
-    // TODO
+    clearBookSuggestion();
+    var suggestList = [];
+    for (var i=0, book; i < bookIndex.length; ++i) {
+        book = bookIndex[i];
+        if (looksLike(input, book)) {
+            suggestList.push(book);
+        }
+    }
+    if (suggestList.length > 0) {
+        displayBookSuggestion(suggestList);
+    }
+}
+
+/*
+ * Fonction de ressemblance
+ */
+
+function looksLike(input, book)
+{
+    if (input.length < 2) {
+        return false;
+    }
+    // TODO vérifier si l'entrée contient "plus" que le nom du livre
+    return new RegExp(input, 'i').test(book);
+}
+
+function displayBookSuggestion(list)
+{
+    for (var i=0, li, book; i < list.length; ++i) {
+        book = list[i];
+        li = document.createElement("li");
+        li.appendChild(document.createTextNode(book));
+        suggestionListSection.appendChild(li);
+    }
+    suggestionListSection.classList.remove("gone");
+}
+
+function clearBookSuggestion()
+{
+    var liList = suggestionListSection.getElementsByTagName("li");
+    for (var i=0, li, l=liList.length; i < l; ++i) {
+        suggestionListSection.removeChild(liList[0]);
+    }
+}
+
+function hideBookSuggestion()
+{
+    suggestionListSection.classList.add("gone");
+    clearBookSuggestion();
 }
 
 /*

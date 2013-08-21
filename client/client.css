@@ -235,6 +235,7 @@ span#reference_error.error
 
 section#suggestion_reference
 {
+    z-index: 50;
     width: 100%;
     position: absolute;
     background-color: white;
@@ -255,7 +256,7 @@ section#suggestion_reference > li:hover
     background-color: #FFFCB0;
 }
 
-section#suggestion_reference > img.close
+img#suggestion_close
 {
     padding: 5px;
     position: absolute;
