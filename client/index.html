@@ -7,12 +7,17 @@
     <title>Concordance biblique</title>
 </head>
 <body>
-    <header>Concordance biblique</header>
-    <table id="layout">
+    <table id="layout" class="expand hexpand">
     <tbody>
+        <!-- en-tête -->
+        <tr>
+            <td id="head" colspan="2">
+                <header>Concordance biblique</header>
+            </td>
+        </tr>
         <tr>
             <!-- panneau de gauche -->
-            <td>
+            <td id="left">
                 <form id="filtre">
                     <table>
                     <tbody>
@@ -78,16 +83,22 @@
                 </form>
             </td>
             <!-- panneau de droite -->
-            <td>
-                <table id="resultats_recherche" class="gone">
-                <tbody>
-                    <tr>
-                        <th>Référence</th>
-                        <th>Verset</th>
-                    </tr>
-                </tbody>
-                </table>
+            <td id="right">
+                <section class="hexpand scroll">
+                    <table id="resultats_recherche" class="gone">
+                    <tbody>
+                        <tr>
+                            <th>Référence</th>
+                            <th>Verset</th>
+                        </tr>
+                    </tbody>
+                    </table>
+                </section>
             </td>
+        </tr>
+        <!-- statistiques -->
+        <tr class="gone">
+            <td id="bottom" colspan="2"></td>
         </tr>
     </tbody>
     </table>

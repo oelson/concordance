@@ -64,8 +64,11 @@
  * Style global
  */
 
-body
+html, body
 {
+    padding: 0;
+    margin: 0;
+    height: 100%;
     font-size: 13px;
 }
 
@@ -78,9 +81,7 @@ body, input, textarea, select, button
 header
 {
     font-size: 1.75em;
-    border-bottom: 2px solid grey;
     color: grey;
-    margin-bottom: .75em;
 }
 
 input
@@ -125,6 +126,16 @@ th
     width: 100%;
 }
 
+.hexpand
+{
+    height: 100%;
+}
+
+.scroll
+{
+    overflow: auto;
+}
+
 /*
  * Spinner
  */
@@ -140,18 +151,26 @@ img#spinner
 
 table#layout
 {
-    width: 100%;
     border-spacing: 0;
-}
-
-table#layout > tbody > tr > td:nth-of-type(1)
-{
-    padding-right: 10px;
 }
 
 table#layout > tbody > tr > td
 {
     vertical-align: top;
+}
+
+/* header */
+td#head
+{
+    height: 1px;
+    border-bottom: 1px solid grey;
+}
+
+/* stats */
+td#bottom
+{
+    height: 1px;
+    border-top: 1px solid grey;
 }
 
 /*
@@ -166,6 +185,12 @@ ol#book_list
 /*
  * Filtre
  */
+
+
+form#filtre
+{
+    padding-right: 10px;
+}
 
 form#filtre > table > tbody > tr > td
 {
@@ -264,10 +289,14 @@ img#suggestion_close
     right: 0;
 }
 
-
 /*
  * Résultats de recherche
  */
+
+td#right > section
+{
+    padding-right: 10px;
+}
 
 table#resultats_recherche
 {
