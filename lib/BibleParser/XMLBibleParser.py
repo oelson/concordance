@@ -34,10 +34,10 @@ class XMLBibleParser:
         "ùúûüu"
     ]
 
-    mandatory_keywords = []
-    one_of_keywords    = []
-    none_of_keywords   = []
-    number_ranges      = []
+    _mandatory_keywords = []
+    _one_of_keywords    = []
+    _none_of_keywords   = []
+    _number_ranges      = []
     
     references = {}
     
@@ -131,20 +131,20 @@ class XMLBibleParser:
         argument.
         """
         # mots étants _tous_ obligatoires
-        for r in self.mandatory_keywords:
+        for r in self._mandatory_keywords:
             if not r.search(verse):
                 return False
         # mots dont au moins un est nécessaire
-        if len(self.one_of_keywords) > 0:
+        if len(self._one_of_keywords) > 0:
             one_found = False
-            for r in self.one_of_keywords:
+            for r in self._one_of_keywords:
                 if r.search(verse):
                     one_found = True
                     break
             if not one_found:
                 return False
         # mots interdits
-        for r in self.none_of_keywords:
+        for r in self._none_of_keywords:
             if r.search(verse):
                 return False
         # TODO range
@@ -154,11 +154,11 @@ class XMLBibleParser:
         """
         """
         # mots étants _tous_ obligatoires
-        for r in self.mandatory_keywords:
+        for r in self._mandatory_keywords:
             text = r.sub(r"_\1_", text)
         # mots dont au moins un est nécessaire
-        if len(self.one_of_keywords) > 0:
-            for r in self.one_of_keywords:
+        if len(self._one_of_keywords) > 0:
+            for r in self._one_of_keywords:
                 text = r.sub(r"_\1_", text)
         return text
     
@@ -183,7 +183,7 @@ class XMLBibleParser:
         """
         Ajoute à la liste des mots-clés tous obligatoires.
         """
-        self.mandatory_keywords.extend([
+        self._mandatory_keywords.extend([
             self._compile_keyword_regex(x) for x in words
         ])
 
@@ -191,7 +191,7 @@ class XMLBibleParser:
         """
         Ajoute à la liste des mots-clés dont _un seul_ est obligatoire.
         """
-        self.one_of_keywords.extend([
+        self._one_of_keywords.extend([
             self._compile_keyword_regex(x) for x in words
         ])
 
@@ -199,7 +199,7 @@ class XMLBibleParser:
         """
         Ajoute à la liste noire des mots-clés.
         """
-        self.none_of_keywords.extend([
+        self._none_of_keywords.extend([
             self._compile_keyword_regex(x) for x in words
         ])
     
@@ -210,7 +210,7 @@ class XMLBibleParser:
         l, h = int(ran["low"]), int(ran["high"])
         if h > l:
             raise ValueError("the range is not valid")
-        self.number_ranges.append((l,h))
+        self._number_ranges.append((l,h))
     
     def set_case_sensitivity(self, sensitive):
         """
@@ -218,15 +218,21 @@ class XMLBibleParser:
         """
         self._case_sensitive = sensitive
     
+    def set_accent_sensitivity(self, sensitive):
+        """
+        Active ou non l'insensibilité aux accents.
+        """
+        self._accent_sensitivity = sensitive
+    
     def clean(self):
         """
         Rétablit le parseur dans son état initial.
         """
         self.references.clear()
-        self.mandatory_keywords.clear()
-        self.one_of_keywords.clear()
-        self.none_of_keywords.clear()
-        self.number_ranges.clear()
+        self._mandatory_keywords.clear()
+        self._one_of_keywords.clear()
+        self._none_of_keywords.clear()
+        self._number_ranges.clear()
     
     def enable_highlighting(self, s):
         """
