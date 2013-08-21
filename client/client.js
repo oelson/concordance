@@ -358,6 +358,7 @@ function requestServer()
         "now": new Date().getTime(),
         "ref": [],
         "tra": filterForm.elements["choix_traduction"].value,
+        "bou": filterForm.elements["filtre_mot"].checked,
         "cas": filterForm.elements["filtre_case"].checked,
         "acc": filterForm.elements["filtre_accent"].checked
     };

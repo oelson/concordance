@@ -42,8 +42,9 @@ class XMLBibleParser:
     references = {}
     
     _accent_sensitivity = True
-    _case_sensitive   = False
-    _highlight_prefix = None
+    _case_sensitive     = False
+    _word_boundary      = True
+    _highlight_prefix   = None
     
     class ReferenceError(ValueError):
         pass
@@ -172,8 +173,11 @@ class XMLBibleParser:
             for accents in self._accent_mapping:
                 p = "["+accents+"]"
                 s = re.sub(p, p, s)
-        # Capture et délimite le mot à chercher
-        s = r"(\b"+s+r"\b)"
+        # Délimite le mot à chercher
+        if self._word_boundary:
+            s = r"\b"+s+r"\b"
+        # Capture du mot dans un groupe
+        s = "("+s+")"
         if self._case_sensitive:
             return re.compile(s)
         else:
@@ -223,6 +227,12 @@ class XMLBibleParser:
         Active ou non l'insensibilité aux accents.
         """
         self._accent_sensitivity = sensitive
+    
+    def set_word_boundary(self, bound):
+        """
+        Active ou non la reconnaissance de mots entiers.
+        """
+        self._word_boundary = bound
     
     def clean(self):
         """

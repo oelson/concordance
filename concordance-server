@@ -56,6 +56,9 @@ def handle(self, data):
         )
     parser = self.bibles[data["tra"]]
     parser.clean()
+    # correspondance avec des mots-entiers
+    if "bou" in data:
+        parser.set_word_boundary(data["bou"])
     # sensibilité à la case
     if "cas" in data:
         parser.set_case_sensitivity(data["cas"])
