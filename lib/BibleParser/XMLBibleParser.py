@@ -96,7 +96,7 @@ class XMLBibleParser:
                 attribs['verse_high'] = -1
         return attribs
 
-    def get_greatest_element_index(self, root, element):
+    def _get_greatest_element_index(self, root, element):
         """
         Retourne le plus grand index (attribut "n") des sous-éléments du
         noeud racine /root/.
@@ -265,7 +265,7 @@ class XMLBibleParser:
                 if attribs['chapter_low'] == -1:
                     chapter_range = range(
                         1,
-                        self.get_greatest_element_index(book, 'c')+1
+                        self._get_greatest_element_index(book, 'c')+1
                     )
                 # Sélectionne un intervalle de chapitres
                 elif attribs['chapter_high'] != -1:
@@ -290,7 +290,7 @@ class XMLBibleParser:
                     if attribs['verse_low'] == -1:
                         verse_range = range(
                             1,
-                            self.get_greatest_element_index(chapter, 'v')+1
+                            self._get_greatest_element_index(chapter, 'v')+1
                         )
                     # Sélectionne un intervalle de versets
                     elif attribs['verse_high'] != -1:
