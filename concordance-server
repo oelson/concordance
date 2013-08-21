@@ -59,6 +59,9 @@ def handle(self, data):
     # sensibilité à la case
     if "cas" in data:
         parser.set_case_sensitivity(data["cas"])
+    # sensibilité aux accents
+    if "acc" in data:
+        parser.set_accent_sensitivity(data["acc"])
     # ajoute les références
     for r in data["ref"]:
         parser.add_reference(r)

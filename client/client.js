@@ -352,14 +352,14 @@ function toggleLaunchButton()
 function requestServer()
 {
     if (!s) {
-        console.error("not connected to the WS server");
         return;
     }
     var dict = {
         "now": new Date().getTime(),
         "ref": [],
         "tra": filterForm.elements["choix_traduction"].value,
-        "cas": caseSensitiveCheckbox.checked
+        "cas": filterForm.elements["filtre_case"].checked,
+        "acc": filterForm.elements["filtre_accent"].checked
     };
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;

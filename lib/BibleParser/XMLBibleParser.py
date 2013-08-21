@@ -18,6 +18,21 @@ class XMLBibleParser:
         """|(?P<no_verse_index>\*)))?)?"""
         """$"""
     )
+    
+    _accent_mapping = [
+        "ÀÁÂÄÆA",
+        "àáâäæa",
+        "ÈÉÊËE",
+        "èéêëe",
+        "ÌÍÎÏI",
+        "ìíîïi",
+        "ÑN",
+        "ñn",
+        "ÒÓÔÖO",
+        "òóôöo",
+        "ÙÚÛÜU",
+        "ùúûüu"
+    ]
 
     mandatory_keywords = []
     one_of_keywords    = []
@@ -26,6 +41,7 @@ class XMLBibleParser:
     
     references = {}
     
+    _accent_sensitivity = True
     _case_sensitive   = False
     _highlight_prefix = None
     
@@ -151,8 +167,13 @@ class XMLBibleParser:
         Compile une expression régulière détectant un mot délimité, avec ou sans
         sensibilité à la case.
         """
+        # Permet de passer outre les accents
+        if not self._accent_sensitivity:
+            for accents in self._accent_mapping:
+                p = "["+accents+"]"
+                s = re.sub(p, p, s)
         # Capture et délimite le mot à chercher
-        s = r"(\b"+re.escape(s)+r"\b)"
+        s = r"(\b"+s+r"\b)"
         if self._case_sensitive:
             return re.compile(s)
         else:
