@@ -110,14 +110,19 @@ function enu(e) { e.preventDefault(); }
  * Ajoute un libellé à l'écran si la référence est bonne.
  */
 
-function addReference(reference)
+function addReference(s)
 {
-    // met-à-jour la liste des références
-    selectedReferences[reference.serialize()] = reference;
-    addReferenceLabel(reference);
-    // masque la référence globale
-    fullBibleReference.classList.add("gone");
-    toggleResetButton();
+    var reference = new Reference(s);
+    if (reference.parse()) {
+        s = reference.serialize();
+        // met-à-jour la liste des références
+        selectedReferences[s] = reference;
+        addReferenceLabel(s);
+        // masque la référence globale
+        fullBibleReference.classList.add("gone");
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -125,11 +130,11 @@ function addReference(reference)
  * forme d'une chaîne de caractères.
  */
 
+function addReferenceLabel(s)
 {
     var ctn = document.createElement("span"),
         del = document.createElement("span");
     ctn.classList.add("reference");
-    var s = reference.serialize();
     ctn.appendChild(document.createTextNode(s));
     del.classList.add("delete");
     del.addEventListener("click", removeReference, false);
@@ -151,7 +156,7 @@ function removeReference(e)
     if (referenceSection.childElementCount == 1) {
         fullBibleReference.classList.remove("gone");
     }
-    toggleResetButton();
+    toggleCleanButton();
 }
 
 /*
@@ -160,7 +165,7 @@ function removeReference(e)
 
 function cleanReferenceList()
 {
-    selectedReferences = {};
+    for (var r in selectedReferences) delete selectedReferences[r];
     var spans = referenceSection.getElementsByClassName("reference");
     for (var i=0, span; i < spans.length; ++i) {
         span = spans[i];
