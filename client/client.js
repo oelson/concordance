@@ -104,7 +104,10 @@ function enu(e) { e.preventDefault(); }
  */
 
 /*
- * Liste des références sélectionnées
+ * Ajoute une référence à partir d'une chaîne, éventuellement malformée.
+ * Un objet de type "Reference" est instancié pour filtrer les mauvaises 
+ * références.
+ * Ajoute un libellé à l'écran si la référence est bonne.
  */
 
 function addReference(reference)
@@ -117,7 +120,11 @@ function addReference(reference)
     toggleResetButton();
 }
 
-function addReferenceLabel(reference)
+/*
+ * Affiche un libellé correspondant à une référence passée en argument sous la
+ * forme d'une chaîne de caractères.
+ */
+
 {
     var ctn = document.createElement("span"),
         del = document.createElement("span");
@@ -132,6 +139,11 @@ function addReferenceLabel(reference)
     referenceSection.appendChild(ctn);
 }
 
+/*
+ * Supprime une référence de l'interface depuis un évènement de clic dirigé sur
+ * un des libellés.
+ */
+
 function removeReference(e)
 {
     delete selectedReferences[e.target.reference];
@@ -141,6 +153,10 @@ function removeReference(e)
     }
     toggleResetButton();
 }
+
+/*
+ * Efface toutes les références affichées et vide le dictionnaire correspondant.
+ */
 
 function cleanReferenceList()
 {
@@ -197,8 +213,12 @@ function displayVerse(ref, verse)
     tbody.appendChild(tr);
     displayedVerses[ref] = verse;
     resultTable.classList.remove("gone");
-    toggleResetButton();
+    toggleCleanButton();
 }
+
+/*
+ * Efface tous les versets affichés.
+ */
 
 function cleanDisplayedVerses()
 {
@@ -332,9 +352,13 @@ function looksLike(input, book)
     if (input.length < 2) {
         return false;
     }
-    // TODO vérifier si l'entrée contient "plus" que le nom du livre
     return new RegExp(input, 'i').test(book);
 }
+
+/*
+ * Affiche la liste de noms de livres passés en argument sous la barre de saisie
+ * des références.
+ */
 
 function displayBookSuggestion(list)
 {
@@ -347,6 +371,10 @@ function displayBookSuggestion(list)
     suggestionListSection.classList.remove("gone");
 }
 
+/*
+ * Vide la liste des suggestions de livres.
+ */
+
 function clearBookSuggestion()
 {
     var liList = suggestionListSection.getElementsByTagName("li");
@@ -354,6 +382,10 @@ function clearBookSuggestion()
         suggestionListSection.removeChild(liList[0]);
     }
 }
+
+/*
+ * Masque, puis efface la liste des suggestions de livres.
+ */
 
 function hideBookSuggestion()
 {
