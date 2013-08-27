@@ -88,6 +88,7 @@ function init()
     reinitButton.addEventListener("click", reinitForm, false);
     reinitButton.addEventListener("click", enu, false);
     cleanButton.addEventListener("click", cleanDisplayedVerses, false);
+    cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // WS
     restoreFormState();
