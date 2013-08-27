@@ -85,8 +85,9 @@ function init()
     filterForm.addEventListener("submit", requestServer, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
-    cleanButton.addEventListener("click", cleanForm, false);
-    reinitButton.addEventListener("click", cleanDisplayedVerses, false);
+    reinitButton.addEventListener("click", reinitForm, false);
+    reinitButton.addEventListener("click", enu, false);
+    cleanButton.addEventListener("click", cleanDisplayedVerses, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // WS
     restoreFormState();
@@ -156,7 +157,6 @@ function removeReference(e)
     if (referenceSection.childElementCount == 1) {
         fullBibleReference.classList.remove("gone");
     }
-    toggleCleanButton();
 }
 
 /*
@@ -174,7 +174,6 @@ function cleanReferenceList()
         }
     }
     fullBibleReference.classList.remove("gone");
-    toggleCleanButton();
 }
 
 /*
@@ -218,7 +217,6 @@ function displayVerse(ref, verse)
     tbody.appendChild(tr);
     displayedVerses[ref] = verse;
     resultTable.classList.remove("gone");
-    toggleCleanButton();
 }
 
 /*
@@ -232,19 +230,18 @@ function cleanDisplayedVerses()
     while (tbody.childElementCount > 1) {
         tbody.removeChild(tbody.lastChild);
     }
-    toggleCleanButton();
     resultTable.classList.add("gone");
 }
 
 /*
- * Néttoie le formulaire:
+ * Réinitialise le formulaire:
  *   . efface les références affichées
  *   . efface les suggestions de livres
  *   . efface les champs du formulaire
  * Et sauvegarde ce nouvel état.
  */
 
-function cleanForm()
+function reinitForm()
 {
     cleanReferenceList();
     clearBookSuggestion();
@@ -265,16 +262,12 @@ function isFormSubmitable()
 }
 
 /*
- * Retourne vrai si l'interface peut être entièrement nétoyée.
- * Ceci est vrai lorsque des versets sont affichés ou lorsque des références
- * sont sélectionnées.
+ * Retourne vrai lorsque des versets sont affichés.
  */
 
 function isUICleanable()
 {
-    var nEl=0;
-    for (var r in selectedReferences) nEl++;
-    return resultTable.tBodies[0].childElementCount > 1 || nEl > 0;
+    return resultTable.tBodies[0].childElementCount > 1;
 }
 
 /*
@@ -321,7 +314,6 @@ function handleFilterBarKeyDown(e)
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
             hideBookSuggestion();
-            toggleCleanButton();
         } else {
             signalReferenceError();
         }
@@ -464,7 +456,6 @@ function restoreFormState()
             addReference(s);
         }
     }
-    toggleCleanButton();
 }
 
 /**
@@ -560,6 +551,7 @@ function handleMessage(e)
         ref = resp["res"][i];
         displayVerse(ref["ref"], ref["verse"]);
     }
+    toggleCleanButton();
 }
 
 function handleError(e)
