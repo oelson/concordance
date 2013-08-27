@@ -484,10 +484,10 @@ function requestServer()
     var dict = {
         "now": new Date().getTime(),
         "ref": [],
-        "tra": filterForm.elements["choix_traduction"].value,
-        "bou": filterForm.elements["filtre_mot"].checked,
-        "cas": filterForm.elements["filtre_case"].checked,
-        "acc": filterForm.elements["filtre_accent"].checked
+        "tra": filterForm.elements["traduction"].value,
+        "bou": filterForm.elements["mot"].checked,
+        "cas": filterForm.elements["case"].checked,
+        "acc": filterForm.elements["accent"].checked
     };
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;
