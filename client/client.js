@@ -39,7 +39,8 @@ var bookListOl,
     filterBar,
     referenceSection,
     launchButton,
-    resetButton,
+    cleanButton,
+    reinitButton,
     fullBibleReference,
     suggestionListSection,
     referenceErrorSpan,
@@ -66,7 +67,8 @@ function init()
     filterForm = document.forms["filtre"];
     resultTable = document.getElementById("resultats_recherche");
     launchButton = document.getElementById("lancer");
-    resetButton = document.getElementById("effacer");
+    cleanButton = document.getElementById("effacer");
+    reinitButton = document.getElementById("reinitialiser");
     filterBar = document.getElementById("filtre_reference");
     referenceSection = document.getElementById("liste_reference");
     fullBibleReference = document.getElementById("bible_entiere");
@@ -83,7 +85,8 @@ function init()
     filterForm.addEventListener("submit", requestServer, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
-    resetButton.addEventListener("click", resetUI, false);
+    cleanButton.addEventListener("click", cleanForm, false);
+    reinitButton.addEventListener("click", cleanDisplayedVerses, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // WS
     connectToServer();
@@ -149,7 +152,7 @@ function cleanReferenceList()
         }
     }
     fullBibleReference.classList.remove("gone");
-    toggleResetButton();
+    toggleCleanButton();
 }
 
 /*
@@ -203,18 +206,70 @@ function cleanDisplayedVerses()
     while (tbody.childElementCount > 1) {
         tbody.removeChild(tbody.lastChild);
     }
-    toggleResetButton();
+    toggleCleanButton();
     resultTable.classList.add("gone");
 }
 
-function resetUI()
+/*
+ * Néttoie le formulaire:
+ *   . efface les références affichées
+ *   . efface les suggestions de livres
+ *   . efface les champs du formulaire
+ * Et sauvegarde ce nouvel état.
+ */
+
+function cleanForm()
 {
-    cleanDisplayedVerses();
+    cleanReferenceList();
     clearBookSuggestion();
     filterForm.reset();
 }
 
 /*
+ * Soumission du formulaire
+ */
+
+function isFormSubmitable()
+{
+    if (s && s.readyState == WebSocket.OPEN) {
+        return true;
+    }
+    return false;
+}
+
+/*
+ * Retourne vrai si l'interface peut être entièrement nétoyée.
+ * Ceci est vrai lorsque des versets sont affichés ou lorsque des références
+ * sont sélectionnées.
+ */
+
+function isUICleanable()
+{
+    var nEl=0;
+    for (var r in selectedReferences) nEl++;
+    return resultTable.tBodies[0].childElementCount > 1 || nEl > 0;
+}
+
+/*
+ * Active ou non le bouton de nettoyage de l'interface.
+ */
+
+function toggleCleanButton()
+{
+    cleanButton.disabled = !isUICleanable();
+}
+
+/*
+ * Active ou non le bouton de recherche.
+ */
+
+function toggleLaunchButton()
+{
+    launchButton.disabled = !isFormSubmitable();
+}
+
+
+/**
  * Saisie intelligente des références
  */
 
@@ -235,12 +290,11 @@ function handleFilterBarKeyDown(e)
 {
     // Ajout de la référence
     if (e.keyIdentifier == "Enter") {
-        var reference = new Reference(filterBar.value);
-        if (reference.parse()) {
-            addReference(reference);
+        if (addReference(filterBar.value)) {
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
             hideBookSuggestion();
+            toggleCleanButton();
         } else {
             signalReferenceError();
         }
