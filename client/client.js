@@ -232,6 +232,7 @@ function cleanDisplayedVerses()
         tbody.removeChild(tbody.lastChild);
     }
     resultTable.classList.add("gone");
+    toggleCleanButton();
 }
 
 /*
@@ -443,7 +444,7 @@ function restoreFormState()
         filterForm.elements["accent"].checked = (localStorage["acc"] == "true");
     }
     if ("bou" in localStorage) {
-        filterForm.elements["mot"].checked = (localStorage["bou"] == true);
+        filterForm.elements["mot"].checked = (localStorage["bou"] == "true");
     }
     if ("ran" in localStorage) {
         var range = localStorage["ran"].split(",");
