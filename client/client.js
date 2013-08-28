@@ -50,10 +50,23 @@ var bookListOl,
 var selectedReferences  = {};
 var displayedVerses = {};
 
-var bookIndex = [];
-
 var lastTimestampReceived = null;
 var connectInterval = null;
+
+ var accentMapping = [
+    "ÀÁÂÄÆA",
+    "àáâäæa",
+    "ÈÉÊËE",
+    "èéêëe",
+    "ÌÍÎÏI",
+    "ìíîïi",
+    "ÑN",
+    "ñn",
+    "ÒÓÔÖO",
+    "òóôöo",
+    "ÙÚÛÜU",
+    "ùúûüu"
+];
 
 /*
  * Récupère divers noeuds HTML dans des variables globales.
@@ -77,10 +90,6 @@ function init()
     spinnerImg = document.getElementById("spinner");
     suggestionCloseImg = document.getElementById("suggestion_close");
     // action
-    var bookList = bookListOl.children;
-    for (var i=0; i < bookList.length; ++i) {
-        bookIndex.push(bookList[i].textContent);
-    }
     filterForm.addEventListener("submit", enu, false);
     filterForm.addEventListener("submit", requestServer, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
@@ -246,7 +255,7 @@ function cleanDisplayedVerses()
 function reinitForm()
 {
     cleanReferenceList();
-    clearBookSuggestion();
+    hideBookSuggestion();
     filterForm.reset();
     saveFormState();
 }
@@ -302,7 +311,7 @@ function handleFilterBarKeyUp(e)
         // Éffacement complet du champs
         if (!filterBar.value) {
             referenceErrorSpan.classList.remove("error");
-            hideBookSuggestion();
+            //hideBookSuggestion();
         }
     }
     suggestBook(filterBar.value);
@@ -329,57 +338,47 @@ function handleFilterBarKeyDown(e)
 
 function suggestBook(input)
 {
-    clearBookSuggestion();
-    var suggestList = [];
-    for (var i=0, book; i < bookIndex.length; ++i) {
-        book = bookIndex[i];
-        if (looksLike(input, book)) {
-            suggestList.push(book);
+    var list = bookListOl.children, n=0;
+    for (var i=0, li; i < list.length; ++i) {
+        li = list[i];
+        if (looksLike(input, li.textContent)) {
+            li.classList.remove("gone");
+            ++n;
+        } else {
+            li.classList.add("gone");
         }
     }
-    if (suggestList.length > 0) {
-        displayBookSuggestion(suggestList);
+    if (n > 0) {
+        displayBookSuggestion();
+    } else {
+        hideBookSuggestion();
     }
 }
 
 /*
  * Fonction de ressemblance
  */
-
+ 
 function looksLike(input, book)
 {
     if (input.length < 2) {
         return false;
     }
+    // Ignore les accents
+    for (var i=0, s; i < accentMapping.length; ++i) {
+        s = "["+accentMapping[i]+"]";
+        input = input.replace(new RegExp(s, 'g'), s);
+    }
     return new RegExp(input, 'i').test(book);
 }
 
 /*
- * Affiche la liste de noms de livres passés en argument sous la barre de saisie
- * des références.
+ * Affiche la liste des suggestions de livres.
  */
 
-function displayBookSuggestion(list)
+function displayBookSuggestion()
 {
-    for (var i=0, li, book; i < list.length; ++i) {
-        book = list[i];
-        li = document.createElement("li");
-        li.appendChild(document.createTextNode(book));
-        suggestionListSection.appendChild(li);
-    }
     suggestionListSection.classList.remove("gone");
-}
-
-/*
- * Vide la liste des suggestions de livres.
- */
-
-function clearBookSuggestion()
-{
-    var liList = suggestionListSection.getElementsByTagName("li");
-    for (var i=0, li, l=liList.length; i < l; ++i) {
-        suggestionListSection.removeChild(liList[0]);
-    }
 }
 
 /*
@@ -389,7 +388,6 @@ function clearBookSuggestion()
 function hideBookSuggestion()
 {
     suggestionListSection.classList.add("gone");
-    clearBookSuggestion();
 }
 
 /*
@@ -646,7 +644,15 @@ function Reference(referenceStr)
             fragments = fragments.slice(2,fragments.length);
         }
         // vérification du nom du livre
-        if (bookIndex.indexOf(this.book) == -1) {
+        var found = false, list = bookListOl.children;
+        for (var i=0, li; i < list.length; ++i) {
+            li = list[i];
+            if (this.book == li.textContent) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
             return false;
         }
         // chapitre

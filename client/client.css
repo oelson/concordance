@@ -174,15 +174,6 @@ td#bottom
 }
 
 /*
- * Liste des livres
- */
-
-ol#book_list
-{
-    display: none;
-}
-
-/*
  * Filtre
  */
 
@@ -254,8 +245,9 @@ span#reference_error.error
     color: red;
 }
 
+
 /*
- * Suggestion de livre
+ * Liste des livres
  */
 
 section#suggestion_reference
@@ -268,7 +260,21 @@ section#suggestion_reference
     box-shadow: 1px 1px 5px rgba(0,0,0,.25);
 }
 
-section#suggestion_reference > li
+img#suggestion_close
+{
+    padding: 5px;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+ol#book_list
+{
+    margin:  0;
+    padding: 0;
+}
+
+ol#book_list li
 {
     cursor: default;
     padding: 3px 6px;
@@ -276,17 +282,9 @@ section#suggestion_reference > li
     list-style-type: none;
 }
 
-section#suggestion_reference > li:hover
+ol#book_list > li:hover
 {
     background-color: #FFFCB0;
-}
-
-img#suggestion_close
-{
-    padding: 5px;
-    position: absolute;
-    top: 0;
-    right: 0;
 }
 
 /*
