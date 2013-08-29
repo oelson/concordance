@@ -372,6 +372,19 @@ function focusPreviousBook()
 function handleGlobalKeyDown(e)
 {
     switch (e.keyIdentifier) {
+    // Sélectionne une proposition
+    case "Enter":
+        if (focusedBookLi) {
+            filterBar.value = focusedBookLi.textContent;
+            // Focus la barre de recherche
+            putCarretToEnd(filterBar);
+            hideBookSuggestion();
+            e.preventDefault();
+            e.stopPropagation();
+            // Évite de réafficher la boîte de suggestions
+            oldFilterBarValue = filterBar.value;
+        }
+        break;
     // Remonte dans la liste des références
     case "Up":
         if (!suggestionListSection.classList.contains("gone")) {
@@ -391,9 +404,7 @@ function handleGlobalKeyDown(e)
         if (!suggestionListSection.classList.contains("gone")) {
             hideBookSuggestion();
             // Focus la barre de recherche
-            filterBar.focus();
-            filterBar.selectionStart = filterBar.value.length;
-            filterBar.selectionEnd = filterBar.value.length;
+            putCarretToEnd(filterBar);
         }
         break;
     }
@@ -427,6 +438,10 @@ function handleFilterBarKeyDown(e)
             filterBar.blur();
             focusNextBook();
         }
+        // La boîte a été cachée 
+        else {
+            suggestBook(filterBar.value);
+        }
         break;
     }
 }
@@ -446,6 +461,17 @@ function handleFilterBarKeyUp(e)
         suggestBook(filterBar.value);
         oldFilterBarValue = filterBar.value;
     }
+}
+
+/*
+ * Focus un champs et déplace le curseur à la fin du texte.
+ */
+
+function putCarretToEnd(input)
+{
+    input.focus();
+    input.selectionStart = input.value.length;
+    input.selectionEnd = input.value.length;
 }
 
 /*
