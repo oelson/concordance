@@ -111,6 +111,14 @@ function init()
     cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     window.addEventListener("hashchange", handleHashChange, false);
+    // selectionne un nom de livre par click
+    var list = bookListOl.children, n=0;
+    for (var i=0, li; i < list.length; ++i) {
+        li = list[i];
+        li.addEventListener("click", function(e) {
+            selectBookItem(this);
+        }, false);
+    }
     // resize
     verticalResizeBar.addEventListener("mousedown", initVerticalResize, false);
     window.addEventListener("mousemove", continueVerticalResize, false);
@@ -392,6 +400,21 @@ function focusPreviousBook()
 }
 
 /*
+ * Routine pour sélectionner un élément de la liste des livres.
+ * Remplis la barre de recherche avec le nom du livre.
+ */
+
+function selectBookItem(li)
+{
+    hideBookSuggestion();
+    filterBar.value = li.textContent;
+    // Focus la barre de recherche
+    putCarretToEnd(filterBar);
+    // Évite de réafficher la boîte de suggestions
+    oldFilterBarValue = filterBar.value;
+}
+
+/*
  * Capture les frappes clavier depuis la fenêtre en général.
  */
 
@@ -401,14 +424,9 @@ function handleGlobalKeyDown(e)
     // Sélectionne une proposition
     case "Enter":
         if (focusedBookLi) {
-            filterBar.value = focusedBookLi.textContent;
-            // Focus la barre de recherche
-            putCarretToEnd(filterBar);
-            hideBookSuggestion();
+            selectBookItem(focusedBookLi);
             e.preventDefault();
             e.stopPropagation();
-            // Évite de réafficher la boîte de suggestions
-            oldFilterBarValue = filterBar.value;
         }
         break;
     // Remonte dans la liste des références
