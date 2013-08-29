@@ -111,6 +111,21 @@ th
     color: grey;
 }
 
+blockquote
+{
+    margin: 0;
+}
+
+a.decore-hover
+{
+    text-decoration: none;
+}
+
+a.decore-hover:hover
+{
+    text-decoration: underline;
+}
+
 .gone
 {
     display: none !important;
