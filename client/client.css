@@ -247,16 +247,12 @@ span#reference_error
     color: transparent;
     font-weight: 700;
    -webkit-transition: color .5s ease-in;  
-   -moz-transition: color .5s ease-in;  
-   -o-transition: color .5s ease-in;  
-   transition: color .5s ease-in;
 }
 
 span#reference_error.error
 {
     color: red;
 }
-
 
 /*
  * Liste des livres
