@@ -151,6 +151,8 @@ function addReference(s)
         // masque la référence globale
         fullBibleReference.classList.add("gone");
         return true;
+    } else {
+        console.error('bad reference "'+s+'"');
     }
     return false;
 }
