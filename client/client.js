@@ -45,7 +45,11 @@ var bookListOl,
     suggestionListSection,
     referenceErrorSpan,
     spinnerImg,
-    suggestionCloseImg;
+    suggestionCloseImg,
+    bottomBar,
+    rightBar,
+    verticalResizeBar,
+    horizontalResizeBar;
 
 var selectedReferences  = {};
 var displayedVerses = {};
@@ -91,6 +95,10 @@ function init()
     referenceErrorSpan = document.getElementById("reference_error");
     spinnerImg = document.getElementById("spinner");
     suggestionCloseImg = document.getElementById("suggestion_close");
+    bottomBar = document.getElementById("bottom");
+    rightBar = document.getElementById("right");
+    verticalResizeBar = document.getElementById("vertical-resize");
+    horizontalResizeBar = document.getElementById("horizontal-resize");
     // action
     filterForm.addEventListener("submit", enu, false);
     filterForm.addEventListener("submit", requestServer, false);
@@ -102,6 +110,14 @@ function init()
     cleanButton.addEventListener("click", cleanDisplayedVerses, false);
     cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
+    window.addEventListener("hashchange", handleHashChange, false);
+    // resize
+    verticalResizeBar.addEventListener("mousedown", initVerticalResize, false);
+    window.addEventListener("mousemove", continueVerticalResize, false);
+    window.addEventListener("mouseup", stopVerticalResize, false);
+    horizontalResizeBar.addEventListener("mousedown", initHorizontalResize, false);
+    window.addEventListener("mousemove", continueHorizontalResize, false);
+    window.addEventListener("mouseup", stopHorizontalResize, false);
     // WS
     restoreFormState();
     connectToServer();
@@ -681,6 +697,69 @@ function dictToQueryString(dict)
         s += e+"="+dict[e];
     }
     return s;
+}
+
+/**
+ * Redimensionnement
+ */
+
+var verticalResizeProceeding,
+    horizontalResizeProceeding;
+
+/*
+ * Vertical
+ */
+
+function initVerticalResize(e)
+{
+    verticalResizeProceeding = {
+        "initial_h": bottomBar.offsetHeight,
+        "initial_y": e.clientY
+    };
+    e.preventDefault();
+}
+
+function continueVerticalResize(e)
+{
+    if (!verticalResizeProceeding) return;
+    var diff = e.clientY - verticalResizeProceeding["initial_y"];
+    var newHeight = verticalResizeProceeding["initial_h"] - diff;
+    if (newHeight > 0) {
+        bottomBar.style.height = newHeight+"px";
+    }
+}
+
+function stopVerticalResize(e)
+{
+    verticalResizeProceeding = null;
+}
+
+/*
+ * Horizontal
+ */
+
+function initHorizontalResize(e)
+{
+    horizontalResizeProceeding = {
+        "initial_w": rightBar.offsetWidth,
+        "initial_x": e.clientX
+    };
+    e.preventDefault();
+}
+
+function continueHorizontalResize(e)
+{
+    if (!horizontalResizeProceeding) return;
+    var diff = e.clientX - horizontalResizeProceeding["initial_x"];
+    var newWidth = horizontalResizeProceeding["initial_w"] - diff;
+    if (newWidth > 0) {
+        rightBar.style.width = newWidth+"px";
+    }
+}
+
+function stopHorizontalResize(e)
+{
+    horizontalResizeProceeding = null;
 }
 
 /**
