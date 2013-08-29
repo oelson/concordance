@@ -49,7 +49,10 @@ var bookListOl,
     bottomBar,
     rightBar,
     verticalResizeBar,
-    horizontalResizeBar;
+    horizontalResizeBar,
+    readTab,
+    dictTab,
+    readSection;
 
 var selectedReferences  = {};
 var displayedVerses = {};
@@ -99,6 +102,9 @@ function init()
     rightBar = document.getElementById("right");
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
+    readTab = document.getElementById("tab-read")
+    dictTab = document.getElementById("tab-dict");
+    readSection = document.getElementById("lecture");
     // action
     filterForm.addEventListener("submit", enu, false);
     filterForm.addEventListener("submit", requestServer, false);
@@ -697,7 +703,9 @@ function parseHashProperties(prop)
 
 function displayVeseInContext(ref)
 {
-    // TODO
+    // <blockquote><span>1&nbsp;</span>Au commencement Dieu créa les cieux et la terre.</blockquote>
+    // readSection
+    console.log(ref);
 }
 
 /**

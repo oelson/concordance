@@ -7,7 +7,7 @@
     <title>Concordance biblique</title>
 </head>
 <body class="noscroll">
-    <table id="layout" class="expand hexpand">
+    <table id="layout" class="h-expand v-expand">
     <tbody>
         <!-- en-tête -->
         <tr>
@@ -18,7 +18,7 @@
         <tr>
             <!-- panneau de gauche -->
             <td id="left" class="noscroll">
-                <form id="filtre" class="expand hexpand">
+                <form id="filtre" class="h-expand v-expand">
                     <table>
                     <tbody>
                         <tr>
@@ -38,7 +38,7 @@
                             <td><label for="filtre_reference">dans les passages suivants&nbsp;:</label></td>
                             <td>
                                 <section class="relative">
-                                    <input class="expand" id="filtre_reference" size="20" placeholder="Entrez une référence biblique&hellip;" />
+                                    <input class="h-expand" id="filtre_reference" size="20" placeholder="Entrez une référence biblique&hellip;" />
                                     <!-- suggestion de livres lors de la frappe -->
                                     <section id="suggestion_reference" class="gone">
                                         <img src="res/img/close.gif" width="10" height="10" id="suggestion_close" />
@@ -117,15 +117,15 @@
                         </tr>
                         <tr>
                             <td><label for="filtre_quelconque">l'un des mots suivants&nbsp;:</label></td>
-                            <td><input class="expand" name="quelconque" id="filtre_quelconque" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                            <td><input class="h-expand" name="quelconque" id="filtre_quelconque" size="20" placeholder="mot1 mot2&hellip;"/></td>
                         </tr>
                         <tr>
                             <td><label for="filtre_conjonction">tous les mots suivants&nbsp;:</label></td>
-                            <td><input class="expand" name="conjonction" id="filtre_conjonction" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                            <td><input class="h-expand" name="conjonction" id="filtre_conjonction" size="20" placeholder="mot1 mot2&hellip;"/></td>
                         </tr>
                         <tr>
                             <td><label for="filtre_aucun">aucun des mots suivants&nbsp;:</label></td>
-                            <td><input class="expand" name="aucun" id="filtre_aucun" size="20" placeholder="mot1 mot2&hellip;"/></td>
+                            <td><input class="h-expand" name="aucun" id="filtre_aucun" size="20" placeholder="mot1 mot2&hellip;"/></td>
                         </tr>
                         <tr>
                             <td><label for="filtre_nombres_min">nombres compris entre&nbsp;:</label></td>
@@ -161,12 +161,12 @@
             </td>
             <!-- panneau de droite -->
             <td id="right">
-                <table id="right-layout" class="relative hexpand expand">
+                <table id="right-layout" class="relative v-expand h-expand">
                 <tbody>
                     <tr>
                         <td>
                             <!-- Résultats de la recherche -->
-                            <section class="hexpand scroll">
+                            <section class="v-expand scroll">
                                 <table id="resultats_recherche" class="gone">
                                 <tbody>
                                     <tr>
@@ -185,8 +185,16 @@
                         </td>                    
                     </tr>
                     <tr>
+                        <td id="bottom-tabs">
+                            <nav>
+                                <li class="selected"><a id="tab-read">Lecture</a></li>
+                                <li><a id="tab-dict">Dictionnaire</a></li>
+                            </nav>
+                        </td>
+                    </tr>
+                    <tr>
                         <td id="bottom" class="relative">
-                            <section id="lecture" class="hexpand scroll"></section>
+                            <section id="lecture" class="scroll v-expand"></section>
                         </td>
                     </tr>
                 </tbody>

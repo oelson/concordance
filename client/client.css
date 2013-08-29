@@ -136,12 +136,12 @@ a.decore-hover:hover
     position: relative;
 }
 
-.expand
+.h-expand
 {
     width: 100%;
 }
 
-.hexpand
+.v-expand
 {
     height: 100%;
 }
@@ -387,9 +387,10 @@ td#bottom
 section#lecture
 {
     padding: 8px;
-    /*-webkit-column-width: 333px;*/
     font-family: RobotoSlab;
     text-align: justify;
+    max-width: 100%;
+    -webkit-column-width: 333px;
 }
 
 /*
@@ -409,3 +410,36 @@ section#lecture blockquote
     display: inline;
 }
  
+/*
+ * Onglets du panneau du bas
+ */
+
+td#bottom-tabs
+{
+    height: 1px;
+}
+
+td#bottom-tabs > nav
+{
+    display: block;
+    padding: 0 5px 0 5px;
+    cursor: default;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(0,0,0,.2);
+}
+
+td#bottom-tabs > nav > li
+{
+    display: inline-block;
+    list-style-type: none;
+    color: black;
+    text-shadow: 1px 1px 1px white;
+    background-color: #E0E0E0;
+    padding: 2px 6px 2px 6px;
+    border-left:  3px solid transparent;
+}
+
+td#bottom-tabs > nav > li.selected
+{
+    border-left-color: #4285F4;
+}
