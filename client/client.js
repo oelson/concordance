@@ -892,36 +892,59 @@ function Reference(referenceStr)
     this.referenceStr = referenceStr;
     
     this.book    = null;
-    this.chapter = null;
-    this.range   = {"low": null, "high": null};
+    this.chapterRange = {"low": null, "high": null};
+    this.verseRange   = {"low": null, "high": null};
+    
+    /*
+     * Construit une expression de reconnaissance de références valides.
+     */
+    
+    var w = "a-zA-Z";
+    for (var i=0, s; i < accentMapping.length; ++i) {
+        s = accentMapping[i].slice(0,-1);
+        w += s;
+    }
+    w = "["+w+"]";
+    
+    var d = "[0-9]";
+    
+    this.testReference = new RegExp("^(([123] )?"+w+"+)( "+d+"+(-"+d+"+)?(\\."+d+"+(-"+d+"+)?)?)?$");
+    
+    /*
+     * Reconstruit la référence de manière propre.
+     */
     
     this.serialize = function() {
         var ref = this.book;
-        if (this.chapter) {
-            ref += " " + this.chapter;
+        if (this.chapterRange["low"]) {
+            ref += " " + this.chapterRange["low"];
+            if (this.chapterRange["high"]) {
+                ref += "-" + this.chapterRange["high"];
+            }
         }
-        if (this.range["low"]) {
-            ref += "." + this.range["low"];
-            if (this.range["high"]) {
-                ref += "-" + this.range["high"];
+        if (this.verseRange["low"]) {
+            ref += "." + this.verseRange["low"];
+            if (this.verseRange["high"]) {
+                ref += "-" + this.verseRange["high"];
             }
         }
         return ref;
     };
     
-    this.filterWhiteStr = function(s)
-    {
-        return s.length > 0 && s.search(/^\s+$/) == -1;
-    }
-    
     /*
-     * Obligatoire de trouver au moins le nom de chapitre
+     * Découpe la référence pour en extraire les propriétés.
+     * Il est obligatoire de trouver au moins le nom de chapitre.
      */
 
     this.parse = function() {
-        var fragments = this.referenceStr.split(/\s+/).filter(this.filterWhiteStr);
+        // Test préliminaire de reconnaissance
+        if (!this.testReference.test(this.referenceStr)) {
+            return false;
+        }
+        var fragments = this.referenceStr.split(/\s+/);
         if (fragments.length < 1) return false;
-        // nom du livre
+        /* Extrait le nom du livre
+         */
         this.book = fragments[0];
         // le premier élément est le numéro du livre
         if (isNaN(fragments[0])) {
@@ -942,47 +965,26 @@ function Reference(referenceStr)
         if (!found) {
             return false;
         }
-        // chapitre
+        // Le nom du livre n'est pas suivi d'autres informations
         if (fragments.length == 0) {
             return true;
-        } else if (isNaN(fragments[0])) {
-            return false;
-        } else {
-            this.chapter = fragments[0];
-            fragments = fragments.slice(1,fragments.length);
         }
-        // point
-        if (fragments.length == 0) {
-            return true;
-        } else if (fragments[0] != ".") {
-            return false;
-        } else {
-            fragments = fragments.slice(1,fragments.length);
+        /* Extraction de l'intervalle des chapitres
+         */
+        fragments = fragments[0].split(".");
+        var pair = fragments[0].split("-");
+        this.chapterRange["low"]  = pair[0];
+        if (pair.length == 2) {
+            this.chapterRange["high"] = pair[1];
         }
-        // indice haut
-        if (fragments.length == 0) {
-            return true;
-        } else if (isNaN(fragments[0])) {
-            return false;
-        } else {
-            this.range["low"] = fragments[0];
-            fragments = fragments.slice(1,fragments.length);
-        }
-        // tiret
-        if (fragments.length == 0) {
-            return true;
-        } else if (fragments[0] != "-") {
-            return false;
-        } else {
-            fragments = fragments.slice(1,fragments.length);
-        }
-        // indice bas
-        if (fragments.length == 0) {
-            return false;
-        } else if (isNaN(fragments[0])) {
-            return false;
-        } else {
-            this.range["high"] = fragments[0];
+        /* Extraction de l'intervalle des versets
+         */
+        if (fragments.length == 2) {
+            pair = fragments[1].split("-");
+            this.verseRange["low"]  = pair[0];
+            if (pair.length == 2) {
+                this.verseRange["high"] = pair[1];
+            }
         }
         return true;
     };
