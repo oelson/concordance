@@ -52,6 +52,8 @@ var displayedVerses = {};
 
 var lastTimestampReceived = null;
 var connectInterval = null;
+var focusedBookLi = null;
+var oldFilterBarValue = "";
 
  var accentMapping = [
     "ÀÁÂÄÆA",
@@ -94,6 +96,7 @@ function init()
     filterForm.addEventListener("submit", requestServer, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
+    window.addEventListener("keydown", handleGlobalKeyDown, false);
     reinitButton.addEventListener("click", reinitForm, false);
     reinitButton.addEventListener("click", enu, false);
     cleanButton.addEventListener("click", cleanDisplayedVerses, false);
@@ -299,28 +302,108 @@ function toggleLaunchButton()
     launchButton.disabled = !isFormSubmitable();
 }
 
-
 /**
  * Saisie intelligente des références
  */
 
-function handleFilterBarKeyUp(e)
+/*
+ * Focus la liste des suggestions et sélectionne l'élément suivant.
+ */
+
+function focusNextBook()
 {
-    // Backspace
-    if (e.keyCode == 8) {
-        // Éffacement complet du champs
-        if (!filterBar.value) {
-            referenceErrorSpan.classList.remove("error");
-            //hideBookSuggestion();
+    var oldFocusedBookLi = focusedBookLi, newFocusedBookLi;
+    // Descend d'un item
+    if (focusedBookLi) {
+        newFocusedBookLi = focusedBookLi;
+        do {
+            newFocusedBookLi = newFocusedBookLi.nextElementSibling;
+        }
+        while (newFocusedBookLi && newFocusedBookLi.classList.contains("gone"));
+    }
+    // Déplace le focus sur la liste des suggestions
+    else {
+        newFocusedBookLi = bookListOl.firstElementChild;
+        while (newFocusedBookLi && newFocusedBookLi.classList.contains("gone")) {
+            newFocusedBookLi = newFocusedBookLi.nextElementSibling;
         }
     }
-    suggestBook(filterBar.value);
+    if (oldFocusedBookLi != newFocusedBookLi) {
+        if (newFocusedBookLi) {
+            if (oldFocusedBookLi) {
+                oldFocusedBookLi.classList.remove("focused");
+            }
+            newFocusedBookLi.classList.add("focused");
+            focusedBookLi = newFocusedBookLi;
+        }
+    }
+}
+
+/*
+ * Focus la liste des suggestions et sélectionne l'élément précédent.
+ */
+
+function focusPreviousBook()
+{
+    var oldFocusedBookLi = focusedBookLi, newFocusedBookLi;
+    // Descend d'un item
+    if (focusedBookLi) {
+        newFocusedBookLi = focusedBookLi;
+        do {
+            newFocusedBookLi = newFocusedBookLi.previousElementSibling;
+        }
+        while (newFocusedBookLi && newFocusedBookLi.classList.contains("gone"));
+    }
+    // Déplace le focus sur la barre de recherche
+    else {
+        filterBar.focus();
+    }
+    if (oldFocusedBookLi != newFocusedBookLi) {
+        if (newFocusedBookLi) {
+            if (oldFocusedBookLi) {
+                oldFocusedBookLi.classList.remove("focused");
+            }
+            newFocusedBookLi.classList.add("focused");
+            focusedBookLi = newFocusedBookLi;
+        }
+    }
+}
+
+function handleGlobalKeyDown(e)
+{
+    switch (e.keyIdentifier) {
+    // Remonte dans la liste des références
+    case "Up":
+        if (!suggestionListSection.classList.contains("gone")) {
+            e.preventDefault();
+            focusPreviousBook();
+        }
+        break;
+    // Descend dans la liste des références
+    case "Down":
+        if (!suggestionListSection.classList.contains("gone")) {
+            e.preventDefault();
+            focusNextBook();
+        }
+        break;
+    // Échap
+    case "U+001B":
+        if (!suggestionListSection.classList.contains("gone")) {
+            hideBookSuggestion();
+            // Focus la barre de recherche
+            filterBar.focus();
+            filterBar.selectionStart = filterBar.value.length;
+            filterBar.selectionEnd = filterBar.value.length;
+        }
+        break;
+    }
 }
 
 function handleFilterBarKeyDown(e)
 {
+    switch (e.keyIdentifier) {
     // Ajout de la référence
-    if (e.keyIdentifier == "Enter") {
+    case "Enter":
         if (addReference(filterBar.value)) {
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
@@ -329,6 +412,39 @@ function handleFilterBarKeyDown(e)
             signalReferenceError();
         }
         e.preventDefault();
+        break;
+    // Remonte dans la liste des références
+    case "Up":
+        e.preventDefault();
+        e.stopPropagation();
+        focusPreviousBook();
+        break;
+    // Descend dans la liste des références
+    case "Down":
+        if (!suggestionListSection.classList.contains("gone")) {
+            e.preventDefault();
+            e.stopPropagation();
+            filterBar.blur();
+            focusNextBook();
+        }
+        break;
+    }
+}
+
+function handleFilterBarKeyUp(e)
+{
+    // Backspace
+    switch (e.keyIdentifier) {
+    case "U+0008":
+        // Éffacement complet du champs
+        if (!filterBar.value) {
+            referenceErrorSpan.classList.remove("error");
+        }
+        break;
+    }
+    if (oldFilterBarValue != filterBar.value) {
+        suggestBook(filterBar.value);
+        oldFilterBarValue = filterBar.value;
     }
 }
 
@@ -387,6 +503,10 @@ function displayBookSuggestion()
 
 function hideBookSuggestion()
 {
+    if (focusedBookLi) {
+        focusedBookLi.classList.remove("focused");
+        focusedBookLi = null;
+    }
     suggestionListSection.classList.add("gone");
 }
 

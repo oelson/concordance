@@ -282,7 +282,7 @@ ol#book_list li
     list-style-type: none;
 }
 
-ol#book_list > li:hover
+ol#book_list li.focused
 {
     background-color: #FFFCB0;
 }
