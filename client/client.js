@@ -369,6 +369,10 @@ function focusPreviousBook()
     }
 }
 
+/*
+ * Capture les frappes clavier depuis la fenêtre en général.
+ */
+
 function handleGlobalKeyDown(e)
 {
     switch (e.keyIdentifier) {
@@ -410,6 +414,11 @@ function handleGlobalKeyDown(e)
     }
 }
 
+/*
+ * Capture les frappes clavier depuis la barre de recherche des références.
+ * (appuis bas)
+ */
+ 
 function handleFilterBarKeyDown(e)
 {
     switch (e.keyIdentifier) {
@@ -445,6 +454,11 @@ function handleFilterBarKeyDown(e)
         break;
     }
 }
+
+/*
+ * Capture les frappes clavier depuis la barre de recherche des références.
+ * (appuis haut)
+ */
 
 function handleFilterBarKeyUp(e)
 {
