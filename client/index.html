@@ -6,19 +6,19 @@
     <script src="client.js"></script>
     <title>Concordance biblique</title>
 </head>
-<body>
+<body class="noscroll">
     <table id="layout" class="expand hexpand">
     <tbody>
         <!-- en-tête -->
         <tr>
-            <td id="head" colspan="2">
+            <td id="head" colspan="3">
                 <header>Concordance biblique</header>
             </td>
         </tr>
         <tr>
             <!-- panneau de gauche -->
-            <td id="left">
-                <form id="filtre">
+            <td id="left" class="noscroll">
+                <form id="filtre" class="expand hexpand">
                     <table>
                     <tbody>
                         <tr>
@@ -155,23 +155,43 @@
                     </table>
                 </form>
             </td>
+            <!-- barre de redimensionnement horizontale -->
+            <td id="horizontal-resize">
+                <img src="res/img/hresize.png" height="20" width="3"/>
+            </td>
             <!-- panneau de droite -->
             <td id="right">
-                <section class="hexpand scroll">
-                    <table id="resultats_recherche" class="gone">
-                    <tbody>
-                        <tr>
-                            <th>Référence</th>
-                            <th>Verset</th>
-                        </tr>
-                    </tbody>
-                    </table>
-                </section>
+                <table id="right-layout" class="relative hexpand expand">
+                <tbody>
+                    <tr>
+                        <td>
+                            <!-- Résultats de la recherche -->
+                            <section class="hexpand scroll">
+                                <table id="resultats_recherche" class="gone">
+                                <tbody>
+                                    <tr>
+                                        <th>Référence</th>
+                                        <th>Verset</th>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </section>
+                        </td>
+                    </tr>
+                    <!-- barre de redimensionnement verticale -->
+                    <tr>
+                        <td id="vertical-resize">
+                            <img src="res/img/vresize.png" height="3" width="20"/>
+                        </td>                    
+                    </tr>
+                    <tr>
+                        <td id="bottom" class="relative">
+                            <section id="lecture" class="hexpand scroll"></section>
+                        </td>
+                    </tr>
+                </tbody>
+                </table>
             </td>
-        </tr>
-        <!-- statistiques -->
-        <tr class="gone">
-            <td id="bottom" colspan="2"></td>
         </tr>
     </tbody>
     </table>
