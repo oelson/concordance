@@ -240,7 +240,11 @@ function displayVerse(ref, verse)
     var td1 = document.createElement("td"),
         td2 = document.createElement("td");
     var tbody = resultTable.tBodies[0];
-    td1.appendChild(document.createTextNode(ref));
+    var a = document.createElement("a");
+    a.href = "#ref="+encodeURIComponent(ref);
+    a.classList.add("decore-hover");
+    a.appendChild(document.createTextNode(ref));
+    td1.appendChild(a);
     var q = highlightMatches(verse);
     td2.appendChild(q);
     tr.appendChild(td1);
@@ -634,6 +638,48 @@ function restoreFormState()
             addReference(s);
         }
     }
+}
+
+/**
+ * Gestion des URI (gérées par le hash "#" dans l'URL)
+ */
+
+/*
+ * Extrait les propriétés du hash et les retournes sous la forme d'un
+ * dictionnaire.
+ */
+
+function handleHashChange(e)
+{
+    var s = window.location.hash;
+    if (!s) return;
+    s = s.slice(1);
+    var parts = s.split("&"), prop = {};
+    for (var i=0, pair; i < parts.length; ++i) {
+        pair = parts[i].split("=");
+        prop[pair[0]] = decodeURIComponent(pair[1]);
+    }
+    parseHashProperties(prop);
+}
+
+/*
+ * Traite les propriétés du hash.
+ */
+
+function parseHashProperties(prop)
+{
+    if ("ref" in prop) {
+        displayVeseInContext(prop["ref"]);
+    }
+}
+
+/*
+ * Affiche un verset dans son contexte au moyen de la section basse de l'écran.
+ */
+
+function displayVeseInContext(ref)
+{
+    // TODO
 }
 
 /**
