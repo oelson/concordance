@@ -55,7 +55,9 @@ var bookListOl,
     readSection;
 
 var selectedReferences  = {};
-var displayedVerses = {};
+
+var searchVerseList  = {},
+    contextVerseList = {};
 
 var lastTimestampReceived = null;
 var connectInterval = null;
@@ -107,13 +109,13 @@ function init()
     readSection = document.getElementById("lecture");
     // action
     filterForm.addEventListener("submit", enu, false);
-    filterForm.addEventListener("submit", requestServer, false);
+    filterForm.addEventListener("submit", requestServerForSearch, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
     window.addEventListener("keydown", handleGlobalKeyDown, false);
     reinitButton.addEventListener("click", reinitForm, false);
     reinitButton.addEventListener("click", enu, false);
-    cleanButton.addEventListener("click", cleanDisplayedVerses, false);
+    cleanButton.addEventListener("click", cleanSearchList, false);
     cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     window.addEventListener("hashchange", handleHashChange, false);
@@ -248,14 +250,17 @@ function highlightMatches(s)
  * Affichage des références ayant correspondu à la recherche
  */
 
-function displayVerse(ref, verse)
+function addVerseToSearchList(ref, verse)
 {
     var tr  = document.createElement("tr");
     var td1 = document.createElement("td"),
         td2 = document.createElement("td");
     var tbody = resultTable.tBodies[0];
     var a = document.createElement("a");
-    a.href = "#ref="+encodeURIComponent(ref);
+    //a.href = "#ref="+encodeURIComponent(ref);
+    a.addEventListener("click", function(e) {
+        requestServerForContext(ref);
+    }, false);
     a.classList.add("decore-hover");
     a.appendChild(document.createTextNode(ref));
     td1.appendChild(a);
@@ -264,7 +269,7 @@ function displayVerse(ref, verse)
     tr.appendChild(td1);
     tr.appendChild(td2);
     tbody.appendChild(tr);
-    displayedVerses[ref] = verse;
+    searchVerseList[ref] = verse;
     resultTable.classList.remove("gone");
 }
 
@@ -272,15 +277,44 @@ function displayVerse(ref, verse)
  * Efface tous les versets affichés.
  */
 
-function cleanDisplayedVerses()
+function cleanSearchList()
 {
-    displayedVerses = {};
+    searchVerseList = {};
     var tbody = resultTable.tBodies[0];
     while (tbody.childElementCount > 1) {
         tbody.removeChild(tbody.lastChild);
     }
     resultTable.classList.add("gone");
     toggleCleanButton();
+}
+
+/*
+ * Ajoute un verset à la lecture contextuelle (panneau du bas).
+ */
+
+function addVerseToContextList(ref, verse)
+{
+    r = new Reference(ref);
+    r.parse();
+    var span = document.createElement("span");
+    span.appendChild(document.createTextNode(r.verseRange["low"]));
+    var q = document.createElement("blockquote");
+    q.appendChild(span);
+    q.appendChild(document.createTextNode(verse));
+    readSection.appendChild(q);
+    cleanContextList[ref] = verse;
+}
+
+/*
+ * Vide le panneau de lecture contextuelle.
+ */
+
+function cleanContextList()
+{
+    contextVerseList = {};
+    while (readSection.childElementCount > 0) {
+        readSection.removeChild(readSection.firstElementChild);
+    }
 }
 
 /*
@@ -693,19 +727,8 @@ function handleHashChange(e)
 function parseHashProperties(prop)
 {
     if ("ref" in prop) {
-        displayVeseInContext(prop["ref"]);
+        requestServerForContext(prop["ref"]);
     }
-}
-
-/*
- * Affiche un verset dans son contexte au moyen de la section basse de l'écran.
- */
-
-function displayVeseInContext(ref)
-{
-    // <blockquote><span>1&nbsp;</span>Au commencement Dieu créa les cieux et la terre.</blockquote>
-    // readSection
-    console.log(ref);
 }
 
 /**
@@ -713,14 +736,12 @@ function displayVeseInContext(ref)
  */
 
 /* 
- * Envoi une requête de versets
+ * Envoi une requête de recherche de versets.
  */
 
-function requestServer()
+function requestServerForSearch()
 {
-    if (!s) {
-        return;
-    }
+    if (!s) return;
     saveFormState();
     var dict = {
         "now": new Date().getTime(),
@@ -728,7 +749,8 @@ function requestServer()
         "tra": filterForm.elements["traduction"].value,
         "bou": filterForm.elements["mot"].checked,
         "cas": filterForm.elements["case"].checked,
-        "acc": filterForm.elements["accent"].checked
+        "acc": filterForm.elements["accent"].checked,
+        "tok": "search"
     };
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;
@@ -750,7 +772,25 @@ function requestServer()
     for (var r in selectedReferences) {
         dict["ref"].push(r);
     }
-    // Envoi au serveur websocket
+    var jsonData = JSON.stringify(dict);
+    s.send(jsonData);
+}
+
+/*
+ * Procède à une demande de versets basée sur le contexte.
+ */
+
+function requestServerForContext(ref)
+{
+    if (!s) return;
+    var r = new Reference(ref);
+    r.parse();
+    var dict = {
+        "now": new Date().getTime(),
+        "ref": ref,
+        "tok": "context",
+        "tra": filterForm.elements["traduction"].value // TODO utiliser la traduction du verset affiché
+    };
     var jsonData = JSON.stringify(dict);
     s.send(jsonData);
 }
@@ -855,16 +895,51 @@ function handleMessage(e)
 {
     if (typeof(e.data) == "object") return; // Blob
     var resp = JSON.parse(e.data);
-    if (!("res" in resp) || !("now" in resp)) {
+    if (!("res" in resp) || !("now" in resp) || !("tok" in resp)) {
         console.error("malformed JSON received");
         return;
     }
-    cleanDisplayedVerses();
-    for (var i=0, ref; i < resp["res"].length; ++i) {
-        ref = resp["res"][i];
-        displayVerse(ref["ref"], ref["verse"]);
+    switch (resp["tok"]) {
+    // Retour d'une recherche
+    case "search":
+        handleSearchResponse(resp["res"]);
+        break;
+    // Retour d'une demande de versets
+    case "context":
+        handleContextResponse(resp["res"]);
+        break;
+    default:
+        console.error("unknown token");
+        break;
+    }
+}
+
+/*
+ * Fonction de manipulation des réponses du serveur concernant les recherches.
+ */
+
+function handleSearchResponse(res)
+{
+    cleanSearchList();
+    for (var i=0, ref; i < res.length; ++i) {
+        ref = res[i];
+        addVerseToSearchList(ref["ref"], ref["verse"]);
     }
     toggleCleanButton();
+}
+
+/*
+ * Fonction de manipulation des réponses du serveur concernant les demandes de
+ * contexte.
+ */
+
+function handleContextResponse(res)
+{
+    cleanContextList();
+    for (var i=0, ref; i < res.length; ++i) {
+        ref = res[i];
+        addVerseToContextList(ref["ref"], ref["verse"]);
+    }
 }
 
 function handleError(e)
