@@ -68,7 +68,8 @@ var lastTranslationUsed = null;
 var verticalResizeProceeding,
     horizontalResizeProceeding;
 
-var lastContextualQueryReference = null;
+var lastContextualQueryReference  = null,
+    lastContextualQueryBlockQuote = null;
 
  var accentMapping = [
     "ÀÁÂÄÆA",
@@ -296,29 +297,50 @@ function cleanSearchList()
 }
 
 /*
+ * Ajoute un nom de livre à la fin de la section de lecture.
+ */
+
+function addBookToContextList(bookName)
+{
+    var h1 = document.createElement("h1");
+    h1.appendChild(document.createTextNode(bookName));
+    readSection.appendChild(h1);
+}
+
+/*
+ * Ajoute un numéro de chapitre à la fin de la section de lecture.
+ */
+
+function addChapterToContextList(chapter)
+{
+    var h2 = document.createElement("h2");
+    h2.appendChild(document.createTextNode(chapter));
+    readSection.appendChild(h2);
+}
+
+/*
  * Ajoute un verset à la lecture contextuelle (panneau du bas).
  */
 
-function addVerseToContextList(ref, verse)
+function addVerseToContextList(verse, text)
 {
-    r = new Reference(ref);
-    r.parse();
+    // sauvegarde indépendante du DOM
+    contextVerseList[verse] = text;
     var span = document.createElement("span");
-    span.appendChild(document.createTextNode(" "+r.verseRange["low"]+" "));
+    span.appendChild(document.createTextNode(" "+verse+" "));
     var q = document.createElement("blockquote");
-    q.appendChild(span);
     // Met en surbrillance le verset clé
-    var text = document.createTextNode(verse);
-    if (lastContextualQueryReference == ref) {
+    var textNode = document.createTextNode(text);
+    if (lastContextualQueryReference == verse) {
         var mark = document.createElement("mark");
-        mark.appendChild(text);
-        text = mark;
+        mark.appendChild(textNode);
+        textNode = mark;
         // Sauve la référence sur le noeud pour pouvoir l'afficher à la fin
-        lastContextualQueryReference = q;
+        lastContextualQueryBlockQuote = q;
     }
-    q.appendChild(text);
+    q.appendChild(span);
+    q.appendChild(textNode);
     readSection.appendChild(q);
-    contextVerseList[ref] = verse;
 }
 
 /*
@@ -803,7 +825,9 @@ function requestServerForContext(ref)
 {
     if (!s) return;
     // Sauve la référence pour pouvoir mettre en surbrillance son texte après
-    lastContextualQueryReference = ref;
+    var r = new Reference(ref);
+    r.parse();
+    lastContextualQueryReference = r.verseRange["low"];
     var dict = {
         "now": new Date().getTime(),
         "ref": ref,
@@ -952,17 +976,25 @@ function handleSearchResponse(res)
 function handleContextResponse(res)
 {
     cleanContextList();
-    for (var i=0, ref; i < res.length; ++i) {
-        ref = res[i];
-        addVerseToContextList(ref["ref"], ref["verse"]);
+    var text;
+    for (var bookName in res) {
+        addBookToContextList(bookName);
+        for (var chapter in res[bookName]) {
+            addChapterToContextList(chapter);
+            for (var verse in res[bookName][chapter]) {
+                addVerseToContextList(verse, res[bookName][chapter][verse]);
+            }
+        }
     }
     // à cet instant, cette variable désigne le noeud <blockquote> du verset
     // clé
-    lastContextualQueryReference.scrollIntoView();
+    if (lastContextualQueryBlockQuote) {
+        lastContextualQueryBlockQuote.scrollIntoView();
+        lastContextualQueryBlockQuote = null;
+    }
     if (!bottomBar.style.height) {
         bottomBar.style.height = "50%";
     }
-    lastContextualQueryReference = null;
 }
 
 function handleError(e)

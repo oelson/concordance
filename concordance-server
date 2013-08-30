@@ -72,20 +72,6 @@ def handle(self, data):
     else:
         self.error('unknown token "{}"'.format(data["tok"]))
 
-def extract_verses(parser):
-    """
-    Parcours les versets sélectionnés par le parseur et les retournes formatés
-    dans une liste.
-    """
-    verses = []
-    for m in parser:
-        ref = "{} {}.{}".format(m[0], m[1], m[2])
-        verses.append({
-            "ref": ref,
-            "verse": m[3]
-        })
-    return verses
-
 def handleContextRequest(parser, data):
     """
     Traite une requête de contexte.
@@ -93,11 +79,15 @@ def handleContextRequest(parser, data):
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"])
     # itère sur les versets correspondants
-    # TODO il faut passer des informations plus pertinentes:
-    # LISTE(Nom du livre, chapitre, indexes haut et bas)
-    verses = extract_verses(parser)
+    references = {}
+    for book_name, chapter, verse, text in parser:
+        if book_name not in references:
+            references[book_name] = {}
+        if chapter not in references[book_name]:
+            references[book_name][chapter] = {}
+        references[book_name][chapter][verse] = text
     response = {
-        "res": verses,
+        "res": references,
         "now": int(round(time() * 1000)),
         "tok": data["tok"]
     }
@@ -134,7 +124,13 @@ def handleSearchRequest(parser, data):
     # préfixe les résultats par des tirets
     parser.enable_highlighting("_")
     # itère sur les versets correspondants
-    verses = extract_verses(parser)
+    verses = []
+    for book_name, chapter, verse, text in parser:
+        ref = "{} {}.{}".format(book_name, chapter, verse)
+        verses.append({
+            "ref": ref,
+            "verse": text
+        })
     response = {
         "res": verses,
         "now": int(round(time() * 1000)),

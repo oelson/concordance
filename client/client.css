@@ -399,6 +399,31 @@ section#lecture
 }
 
 /*
+ * Nom de livre
+ */
+
+section#lecture h1
+{
+    font-weight: 700;
+    color: #B9B9B9;
+}
+
+/*
+ * Numéro de chapitre
+ */
+
+section#lecture h2
+{
+    font-weight: 400;
+    color: #7C7C7C;
+}
+
+section#lecture h2::before
+{
+    content: "Chapitre ";
+}
+
+/*
  * Numéro du verset
  */
 
