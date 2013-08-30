@@ -322,7 +322,7 @@ function addChapterToContextList(chapter)
  * Ajoute un verset à la lecture contextuelle (panneau du bas).
  */
 
-function addVerseToContextList(verse, text)
+function addVerseToContextList(book, chapter, verse, text)
 {
     // sauvegarde indépendante du DOM
     contextVerseList[verse] = text;
@@ -331,7 +331,10 @@ function addVerseToContextList(verse, text)
     var q = document.createElement("blockquote");
     // Met en surbrillance le verset clé
     var textNode = document.createTextNode(text);
-    if (lastContextualQueryReference == verse) {
+    if (lastContextualQueryReference.book == book &&
+        lastContextualQueryReference.chapterRange["low"] == chapter &&
+        lastContextualQueryReference.verseRange["low"] == verse)
+    {
         var mark = document.createElement("mark");
         mark.appendChild(textNode);
         textNode = mark;
@@ -827,7 +830,7 @@ function requestServerForContext(ref)
     // Sauve la référence pour pouvoir mettre en surbrillance son texte après
     var r = new Reference(ref);
     r.parse();
-    lastContextualQueryReference = r.verseRange["low"];
+    lastContextualQueryReference = r;
     var dict = {
         "now": new Date().getTime(),
         "ref": ref,
@@ -982,7 +985,8 @@ function handleContextResponse(res)
         for (var chapter in res[bookName]) {
             addChapterToContextList(chapter);
             for (var verse in res[bookName][chapter]) {
-                addVerseToContextList(verse, res[bookName][chapter][verse]);
+                text = res[bookName][chapter][verse];
+                addVerseToContextList(bookName, chapter, verse, text);
             }
         }
     }
