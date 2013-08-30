@@ -101,43 +101,43 @@ class XMLBibleParser:
             raise XMLBibleParser.ReferenceError(
                 'invalid reference "{}"'.format(reference)
             )
-        attribs = match.groupdict()
+        attr = match.groupdict()
         # Extraction des attributs du livre
-        if attribs['book'] is None:
+        if attr['book'] is None:
             raise XMLBibleParser.ReferenceError("no book given")
         # Extraction des attributs des chapitres
-        if attribs['chapter_low'] is None:
-            if attribs['no_chapter_index'] is not None:
-                attribs['chapter_low'] = -1
+        if attr['chapter_low'] is None:
+            if attr['no_chapter_index'] is not None:
+                attr['chapter_low'] = -1
             # Permet une sélection globale par omission à condition de ne
             # pas spécifier plus précis quand on ommet moins précis
             else:
-                if attribs['verse_low'] is None:
-                    attribs['chapter_low'] = -1
+                if attr['verse_low'] is None:
+                    attr['chapter_low'] = -1
                 else:
                     raise XMLBibleParser.ReferenceError("no chapter given")
         else:
-            attribs['chapter_low'] = int(attribs['chapter_low'])
-            if attribs['chapter_high'] is not None:
-                attribs['chapter_high'] = int(attribs['chapter_high'])
-                if attribs['chapter_low'] >= attribs['chapter_high']:
+            attr['chapter_low'] = int(attr['chapter_low'])
+            if attr['chapter_high'] is not None:
+                attr['chapter_high'] = int(attr['chapter_high'])
+                if attr['chapter_low'] >= attr['chapter_high']:
                     raise XMLBibleParser.ReferenceError(
                         "invalid chapter range"
                     )
             else:
-                attribs['chapter_high'] = -1
+                attr['chapter_high'] = -1
         # Extraction des attributs des versets
-        if attribs['verse_low'] is None:
-                attribs['verse_low'] = -1
+        if attr['verse_low'] is None:
+                attr['verse_low'] = -1
         else:
-            attribs['verse_low'] = int(attribs['verse_low'])
-            if attribs['verse_high'] is not None:
-                attribs['verse_high'] = int(attribs['verse_high'])
-                if attribs['verse_low'] >= attribs['verse_high']:
+            attr['verse_low'] = int(attr['verse_low'])
+            if attr['verse_high'] is not None:
+                attr['verse_high'] = int(attr['verse_high'])
+                if attr['verse_low'] >= attr['verse_high']:
                     raise XMLBibleParser.ReferenceError("invalid verse range")
             else:
-                attribs['verse_high'] = -1
-        return attribs
+                attr['verse_high'] = -1
+        return attr
 
     def _get_greatest_element_index(self, root, element):
         """
@@ -304,6 +304,81 @@ class XMLBibleParser:
             text
         )
 
+    def _get_book_element(self, book_name):
+        """
+        TODO
+        """
+        book = self.bible.find('./b[@n="{}"]'.format(book_name))
+        if book is None:
+            raise XMLBibleParser.ReferenceError(
+                'invalid book name "{}"'.format(attr["book"])
+            )
+        return book
+
+    def _get_chapter_element(self, book, chapter_index):
+        """
+        TODO
+        """
+        chapter = book.find('./c[@n="{}"]'.format(chapter_index))
+        if chapter is None:
+            raise XMLBibleParser.ReferenceError(
+                'invalid chapter number "{}"'.format(chapter_index)
+            )
+        return chapter
+    
+    def _get_verse_element(self, chapter, verse_index):
+        """
+        TODO
+        """
+        verse = chapter.find('./v[@n="{}"]'.format(verse_index))
+        if verse is None:
+            raise XMLBibleParser.ReferenceError(
+                'invalid verse index "{}"'.format(verse_index)
+            )
+        return verse
+    
+    def _build_chapter_range(self, book, attr):
+        """
+        TODO
+        """
+        # Sélectionne tous les chapitres
+        if attr["chapter_low"] == -1:
+            chapter_range = range(
+                1,
+                self._get_greatest_element_index(book, "c")+1
+            )
+        # Sélectionne un intervalle de chapitres
+        elif attr["chapter_high"] != -1:
+            chapter_range = range(
+                attr["chapter_low"],
+                attr["chapter_high"]+1
+            )
+        # Sélectionne un seul chapitre
+        else:
+            chapter_range = (attr["chapter_low"],)
+        return chapter_range
+    
+    def _build_verse_range(self, chapter, attr):
+        """
+        TODO
+        """
+        # Sélectionne tous les versets du chapitre
+        if attr["verse_low"] == -1:
+            verse_range = range(
+                1,
+                self._get_greatest_element_index(chapter, "v")+1
+            )
+        # Sélectionne un intervalle de versets
+        elif attr["verse_high"] != -1:
+            verse_range = range(
+                attr["verse_low"],
+                attr["verse_high"]+1
+            )
+        # Sélectionne un seul verset
+        else:
+            verse_range = (attr["verse_low"],)
+        return verse_range
+
     def __iter__(self):
         """
         Recherche dans la bible à partir de références et les retournes une 
@@ -319,63 +394,15 @@ class XMLBibleParser:
                             yield res
         # Parcours uniquement des références précises
         else:
-            for reference in self.references:
-                attribs = self.parse_reference(reference)
-                book = self.bible.find('./b[@n="{}"]'.format(attribs['book']))
-                if book is None:
-                    raise XMLBibleParser.ReferenceError(
-                        'invalid book name "{}"'.format(attribs['book'])
-                    )
-                # Sélectionne tous les chapitres
-                if attribs['chapter_low'] == -1:
-                    chapter_range = range(
-                        1,
-                        self._get_greatest_element_index(book, 'c')+1
-                    )
-                # Sélectionne un intervalle de chapitres
-                elif attribs['chapter_high'] != -1:
-                    chapter_range = range(
-                        attribs['chapter_low'],
-                        attribs['chapter_high']+1
-                    )
-                # Sélectionne un seul chapitre
-                else:
-                    chapter_range = (attribs['chapter_low'],)
+            for ref in self.references:
+                attr = self.references[ref]
+                book = self._get_book_element(attr["book"])
+                chapter_range = self._build_chapter_range(book, attr)
                 for chapter_index in chapter_range:
-                    chapter = book.find('./c[@n="{}"]'.format(
-                        chapter_index
-                    ))
-                    if chapter is None:
-                        raise XMLBibleParser.ReferenceError(
-                            'invalid chapter number "{}"'.format(
-                                chapter_index
-                            )
-                        )
-                    # Sélectionne tous les versets du chapitre
-                    if attribs['verse_low'] == -1:
-                        verse_range = range(
-                            1,
-                            self._get_greatest_element_index(chapter, 'v')+1
-                        )
-                    # Sélectionne un intervalle de versets
-                    elif attribs['verse_high'] != -1:
-                        verse_range = range(
-                            attribs['verse_low'],
-                            attribs['verse_high']+1
-                        )
-                    # Sélectionne un seul verset
-                    else:
-                        verse_range = (attribs['verse_low'],)
+                    chapter = self._get_chapter_element(book, chapter_index)
+                    verse_range = self._build_verse_range(chapter, attr)
                     for verse_index in verse_range:
-                        verse = chapter.find('./v[@n="{}"]'.format(
-                            verse_index
-                        ))
-                        if verse is None:
-                            raise XMLBibleParser.ReferenceError(
-                                'invalid verse index "{}"'.format(
-                                    verse_index
-                                )
-                            )
+                        verse = self._get_verse_element(chapter, verse_index)
                         res = self._parse_verse(book, chapter, verse)
                         if res is not None:
                             yield res
