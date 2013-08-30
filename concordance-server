@@ -30,6 +30,10 @@ from time import time, sleep
 from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
 from xml.etree import ElementTree
 
+# Nombre de versets à sélectionner autours d'une référence lors d'un
+# élargissement
+context_size = 20
+
 def init(self):
     """
     Ajoute au thread un dictionnaire qui contiendra les différents parseurs
@@ -77,7 +81,7 @@ def handleContextRequest(parser, data):
     Traite une requête de contexte.
     """
     # sélectionne la référence principale et son contexte
-    parser.add_contextual_reference(data["ref"])
+    parser.add_contextual_reference(data["ref"], context_size, context_size)
     # itère sur les versets correspondants
     references = {}
     for book_name, chapter, verse, text in parser:

@@ -34,10 +34,6 @@ class XMLBibleParser:
         "ùúûüu"
     ]
 
-    # Nombre de versets à sélectionner autours d'une référence lors d'un
-    # élargissement
-    _context_size = 20
-
     _mandatory_keywords = []
     _one_of_keywords    = []
     _none_of_keywords   = []
@@ -65,33 +61,110 @@ class XMLBibleParser:
             raise ValueError("'lexicon' parameter is not a 'LexicalContext' instance")
         self.lexicon = lexicon
 
-    def add_reference(self, ref):
+    def add_reference(self, reference):
         """
         Ajoute une référence en l'état.
         """
-        attr = self.parse_reference(ref)
-        self.references[ref] = attr
+        attr = self.parse_reference(reference)
+        self.references[reference] = attr
 
-    def add_contextual_reference(self, ref):
+    def add_contextual_reference(self, reference, left_lookahead, right_lookahead):
         """
         Ajoute une référence simple en l'élargissant afin d'en faire ressortir
         le contexte.
         """
-        attr = self.parse_reference(ref)
-        attr["verse_high"] = attr["verse_low"] + self._context_size + 1
-        attr["verse_low"] -= self._context_size
-        # L'indice maximum d'un verset pour le chapitre sélectionné
-        book = self._get_book_element(attr["book"])
-        chapter = self._get_chapter_element(book, attr["chapter_low"])
-        max_index = self._get_greatest_element_index(chapter, "v")
-        # Vérifie les bornes de la référence
-        if attr["verse_low"] < 1:
-            # TODO Sélectionne les versets du chapitre / livre précédent si possible
-            attr["verse_low"] = 1
-        if attr["verse_high"] > max_index:
-            # TODO Sélectionne les versets du chapitre / livre suivant si possible
-            attr["verse_high"] = max_index
-        self.references[ref] = attr
+        attr = self.parse_reference(reference)
+        for (new_book, new_chapter, new_verse_low, new_verse_high) in \
+                self._get_overflowing_references(
+                    attr["book"],
+                    attr["chapter_low"],
+                    attr["verse_low"],
+                    left_lookahead,
+                    right_lookahead
+                ):
+            # construit une nouvelle référence
+            new_attr = {
+                "book": new_book,
+                "chapter_low": new_chapter,
+                "chapter_high": -1,
+                "verse_low":  new_verse_low,
+                "verse_high": new_verse_high,
+            }
+            new_reference = "{} {}.{}-{}".format(
+                new_attr["book"],
+                new_attr["chapter_low"],
+                new_attr["verse_low"],
+                new_attr["verse_high"]
+            )
+            # ajoute la nouvelle référence
+            self.references[new_reference] = new_attr
+    
+    def _get_overflowing_references(self,
+                                    book,
+                                    chapter,
+                                    verse,
+                                    left_lookahead,
+                                    right_lookahead):
+        """
+        Obtient de manière récursive des références à partir d'une ancre
+        (l'index "verse") en débordant à droite et à gauche aussi loin que
+        nécessaire.
+        Est un itérateur.
+        """
+        # récupère les noeuds du DOM
+        book_element = self._get_book_element(book)
+        try:
+            chapter_element = self._get_chapter_element(book_element, chapter)
+        except XMLBibleParser.ReferenceError:
+            # Le livre a été entièrement parcouru
+            return None
+        verse_element = self._get_verse_element(chapter_element, verse)
+        # initialise l'intervalle
+        verse_low  = -1
+        verse_high = -1
+        verse_count = self._get_greatest_element_index(chapter_element, "v")
+        ## Sélection à gauche
+        left_diff = verse - left_lookahead
+        if left_diff < 1:
+            try:
+                prev_chapt_element = self._get_chapter_element(book_element, chapter)
+            except XMLBibleParser.ReferenceError:
+                # Le livre a été entièrement parcouru
+                pass
+            else:
+                prev_chapt_size = self._get_greatest_element_index(prev_chapt_element, "v")
+                # il est nécessaire de sélectionner le chapitre précédent
+                for x in self._get_overflowing_references(
+                            book,
+                            chapter-1,
+                            # l'ancre devient le dernier verset du chapitre
+                            # précédent
+                            prev_chapt_size,
+                            -left_diff,
+                            0
+                        ):
+                    yield x
+            verse_low = 1
+        else:
+            verse_low = left_diff
+        ## Sélection à droite
+        right_diff = verse + right_lookahead
+        if right_diff > verse_count:
+            # il est nécessaire de sélectionner le chapitre suivant
+            verse_high = verse_count
+            for x in self._get_overflowing_references(
+                        book,
+                        chapter+1,
+                        # l'ancre devient le premier verset du chapitre suivant
+                        1,
+                        0,
+                        right_diff - verse_count - 1
+                    ):
+                yield x
+        else:
+            verse_high = right_diff
+        ## Retour
+        yield (book, chapter, verse_low, verse_high)
 
     def parse_reference(self, reference):
         """
