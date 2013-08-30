@@ -121,7 +121,7 @@ function init()
     cleanButton.addEventListener("click", cleanSearchList, false);
     cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
-    window.addEventListener("hashchange", handleHashChange, false);
+    //window.addEventListener("hashchange", handleHashChange, false);
     // selectionne un nom de livre par click
     var list = bookListOl.children, n=0;
     for (var i=0, li; i < list.length; ++i) {
@@ -334,6 +334,7 @@ function reinitForm()
     hideBookSuggestion();
     filterForm.reset();
     saveFormState();
+    location.hash = "";
 }
 
 /*
