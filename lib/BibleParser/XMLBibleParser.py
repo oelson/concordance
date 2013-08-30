@@ -62,7 +62,29 @@ class XMLBibleParser:
         self.lexicon = lexicon
 
     def add_reference(self, ref):
+        """
+        Ajoute une référence en l'état.
+        """
         attr = self.parse_reference(ref)
+        self.references[ref] = attr
+
+    def add_contextual_reference(self, ref):
+        """
+        Ajoute une référence simple en l'élargissant afin d'en faire ressortir
+        le contexte.
+        """
+        attr = self.parse_reference(ref)
+        attr["verse_low"]  -= self._context_size
+        attr["verse_high"] += self._context_size
+        # L'indice maximum d'un verset pour le chapitre sélectionné
+        book = self._get_book_element(attr["book"])
+        chapter = self._get_chapter_element(book, attr["chapter_low"])
+        max_index = self._get_greatest_element_index(chapter, "v")+1
+        # Vérifie les bornes de la référence
+        if attr["verse_low"] < 1:
+            attr["verse_low"] = 1
+        if attr["verse_high"] > max_index:
+            attr["verse_high"] = max_index
         self.references[ref] = attr
 
     def parse_reference(self, reference):
