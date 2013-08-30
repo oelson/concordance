@@ -300,6 +300,7 @@ function cleanSearchList()
 
 /*
  * Ajoute un nom de livre à la fin de la section de lecture.
+   TODO Il faut afficher les psaumes et les proverbes différement
  */
 
 function addBookToContextList(bookName)

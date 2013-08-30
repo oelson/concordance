@@ -1,3 +1,7 @@
+"""
+TODO Créer une classe Reference() en Python similaire à celle en Javascript
+"""
+
 import re
 
 from xml.etree.ElementTree import ElementTree, Element
@@ -246,7 +250,7 @@ class XMLBibleParser:
         for r in self._none_of_keywords:
             if r.search(verse):
                 return False
-        # TODO range
+        # TODO Recherche de nombres via un intervalle numérique
         return True
     
     def _prefix_matches(self, text):
