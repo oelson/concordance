@@ -119,6 +119,8 @@ function init()
     filterForm.addEventListener("submit", requestServerForSearch, false);
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
+    filterBar.addEventListener("blur", submitReference, false);
+    filterBar.addEventListener("blur", hideBookSuggestion, false);
     window.addEventListener("keydown", handleGlobalKeyDown, false);
     reinitButton.addEventListener("click", reinitForm, false);
     reinitButton.addEventListener("click", enu, false);
@@ -537,15 +539,12 @@ function handleGlobalKeyDown(e)
 }
 
 /*
- * Capture les frappes clavier depuis la barre de recherche des références.
- * (appuis bas)
+ * Essaye de valider la référence se trouvant dans la barre de recherche.
  */
- 
-function handleFilterBarKeyDown(e)
+
+function submitReference()
 {
-    switch (e.keyIdentifier) {
-    // Ajout de la référence
-    case "Enter":
+    if (filterBar.value) {
         if (addReference(filterBar.value)) {
             filterBar.value = null;
             referenceErrorSpan.classList.remove("error");
@@ -553,6 +552,25 @@ function handleFilterBarKeyDown(e)
         } else {
             signalReferenceError();
         }
+    }
+}
+
+/*
+ * Capture les frappes clavier depuis la barre de recherche des références.
+ * (appuis bas)
+ */
+
+function handleFilterBarKeyDown(e)
+{
+    switch (e.keyIdentifier) {
+    // Ajout de la référence
+    case "Enter":
+        if (!suggestionListSection.classList.contains("gone")) {
+            // La frappe survient juste avant que le handler de l'objet "window"
+            // ne le capture
+            break;
+        }
+        submitReference();
         e.preventDefault();
         break;
     // Remonte dans la liste des références
@@ -566,7 +584,6 @@ function handleFilterBarKeyDown(e)
         if (!suggestionListSection.classList.contains("gone")) {
             e.preventDefault();
             e.stopPropagation();
-            filterBar.blur();
             focusNextBook();
         }
         // La boîte a été cachée 
@@ -605,7 +622,6 @@ function handleFilterBarKeyUp(e)
 
 function putCarretToEnd(input)
 {
-    input.focus();
     input.selectionStart = input.value.length;
     input.selectionEnd = input.value.length;
 }
