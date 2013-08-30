@@ -124,6 +124,7 @@ a.decore-hover
 a.decore-hover:hover
 {
     text-decoration: underline;
+    cursor: pointer;
 }
 
 .gone
@@ -188,7 +189,6 @@ td#head
 /*
  * Filtre
  */
-
 
 form#filtre
 {
@@ -381,7 +381,7 @@ td#bottom
     padding: 0;
     box-sizing: border-box;
     vertical-align: top;
-    /*-webkit-transition: height .5s ease-in;  */
+    /*height: 1px;*/
 }
 
 section#lecture
@@ -403,6 +403,7 @@ section#lecture span
     font-size: .8em;
     display: inline;
     line-height: 1em;
+    padding-right: 4px;
 }
 
 section#lecture blockquote
