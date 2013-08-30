@@ -387,7 +387,7 @@ class XMLBibleParser:
         book = self.bible.find('./b[@n="{}"]'.format(book_name))
         if book is None:
             raise XMLBibleParser.ReferenceError(
-                'invalid book name "{}"'.format(attr["book"])
+                'invalid book name "{}"'.format(book_name)
             )
         return book
 
