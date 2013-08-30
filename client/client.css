@@ -111,6 +111,11 @@ th
     color: grey;
 }
 
+td
+{
+    padding: 0;
+}
+
 blockquote
 {
     margin: 0;
@@ -403,14 +408,22 @@ section#lecture span
     font-size: .8em;
     display: inline;
     line-height: 1em;
-    padding-right: 4px;
 }
 
 section#lecture blockquote
 {
     display: inline;
 }
- 
+
+/*
+ * Verset clé dans son contexte
+ */
+
+section#lecture mark
+{
+    background-color: #FFF8A2; 
+}
+
 /*
  * Onglets du panneau du bas
  */

@@ -78,16 +78,18 @@ class XMLBibleParser:
         le contexte.
         """
         attr = self.parse_reference(ref)
-        attr["verse_low"]  -= self._context_size
-        attr["verse_high"] += self._context_size
+        attr["verse_high"] = attr["verse_low"] + self._context_size + 1
+        attr["verse_low"] -= self._context_size
         # L'indice maximum d'un verset pour le chapitre sélectionné
         book = self._get_book_element(attr["book"])
         chapter = self._get_chapter_element(book, attr["chapter_low"])
-        max_index = self._get_greatest_element_index(chapter, "v")+1
+        max_index = self._get_greatest_element_index(chapter, "v")
         # Vérifie les bornes de la référence
         if attr["verse_low"] < 1:
+            # TODO Sélectionne les versets du chapitre / livre précédent si possible
             attr["verse_low"] = 1
         if attr["verse_high"] > max_index:
+            # TODO Sélectionne les versets du chapitre / livre suivant si possible
             attr["verse_high"] = max_index
         self.references[ref] = attr
 

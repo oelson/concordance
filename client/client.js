@@ -67,6 +67,8 @@ var oldFilterBarValue = "";
 var verticalResizeProceeding,
     horizontalResizeProceeding;
 
+var lastContextualQueryReference = null;
+
  var accentMapping = [
     "ÀÁÂÄÆA",
     "àáâäæa",
@@ -119,6 +121,7 @@ function init()
     reinitButton.addEventListener("click", reinitForm, false);
     reinitButton.addEventListener("click", enu, false);
     cleanButton.addEventListener("click", cleanSearchList, false);
+    cleanButton.addEventListener("click", cleanContextList, false);
     cleanButton.addEventListener("click", enu, false);
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     //window.addEventListener("hashchange", handleHashChange, false);
@@ -300,12 +303,21 @@ function addVerseToContextList(ref, verse)
     r = new Reference(ref);
     r.parse();
     var span = document.createElement("span");
-    span.appendChild(document.createTextNode(r.verseRange["low"]));
+    span.appendChild(document.createTextNode(" "+r.verseRange["low"]+" "));
     var q = document.createElement("blockquote");
     q.appendChild(span);
-    q.appendChild(document.createTextNode(verse));
+    // Met en surbrillance le verset clé
+    var text = document.createTextNode(verse);
+    if (lastContextualQueryReference == ref) {
+        var mark = document.createElement("mark");
+        mark.appendChild(text);
+        text = mark;
+        // Sauve la référence sur le noeud pour pouvoir l'afficher à la fin
+        lastContextualQueryReference = q;
+    }
+    q.appendChild(text);
     readSection.appendChild(q);
-    cleanContextList[ref] = verse;
+    contextVerseList[ref] = verse;
 }
 
 /*
@@ -783,12 +795,12 @@ function requestServerForSearch()
 /*
  * Procède à une demande de versets basée sur le contexte.
  */
-
+ 
 function requestServerForContext(ref)
 {
     if (!s) return;
-    var r = new Reference(ref);
-    r.parse();
+    // Sauve la référence pour pouvoir mettre en surbrillance son texte après
+    lastContextualQueryReference = ref;
     var dict = {
         "now": new Date().getTime(),
         "ref": ref,
@@ -941,6 +953,10 @@ function handleContextResponse(res)
         ref = res[i];
         addVerseToContextList(ref["ref"], ref["verse"]);
     }
+    // à cet instant, cette variable désigne le noeud <blockquote> du verset
+    // clé
+    lastContextualQueryReference.scrollIntoView();
+    lastContextualQueryReference = null;
 }
 
 function handleError(e)
