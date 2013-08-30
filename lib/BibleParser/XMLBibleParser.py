@@ -116,7 +116,7 @@ class XMLBibleParser:
         try:
             chapter_element = self._get_chapter_element(book_element, chapter)
         except XMLBibleParser.ReferenceError:
-            # Le livre a été entièrement parcouru
+            # Le livre a été entièrement parcouru à droite
             return None
         verse_element = self._get_verse_element(chapter_element, verse)
         # initialise l'intervalle
@@ -127,9 +127,9 @@ class XMLBibleParser:
         left_diff = verse - left_lookahead
         if left_diff < 1:
             try:
-                prev_chapt_element = self._get_chapter_element(book_element, chapter)
+                prev_chapt_element = self._get_chapter_element(book_element, chapter-1)
             except XMLBibleParser.ReferenceError:
-                # Le livre a été entièrement parcouru
+                # Le livre a été entièrement parcouru à gauche
                 pass
             else:
                 prev_chapt_size = self._get_greatest_element_index(prev_chapt_element, "v")
@@ -163,7 +163,7 @@ class XMLBibleParser:
                 yield x
         else:
             verse_high = right_diff
-        ## Retour
+        # Retour
         yield (book, chapter, verse_low, verse_high)
 
     def parse_reference(self, reference):
