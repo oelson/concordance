@@ -362,7 +362,12 @@ class XMLBibleParser:
 
     def _parse_verse(self, book, chapter, verse):
         """
-        TODO
+        Vérifie qu'un verset (donné par son noeud) satisfait les exigences de
+        la recherche par mots-clés.
+        Si oui, alors les correpondances sont éventuellement mises en
+        surbrillance.
+        Retourne un quadruplet contenant le nom du livre, les indices du
+        chapitre et du verset, et son texte.
         """
         if verse.text is None:
             return
@@ -380,7 +385,7 @@ class XMLBibleParser:
 
     def _get_book_element(self, book_name):
         """
-        TODO
+        Retourne le noeud du livre dont le nom est passé en argument.
         """
         book = self.bible.find('./b[@n="{}"]'.format(book_name))
         if book is None:
@@ -391,7 +396,8 @@ class XMLBibleParser:
 
     def _get_chapter_element(self, book, chapter_index):
         """
-        TODO
+        Retourne le noeud du chapitre dont le numéro est passé en argument.
+        Le livre doit-être donné en premier argument en tant que noeud DOM.
         """
         chapter = book.find('./c[@n="{}"]'.format(chapter_index))
         if chapter is None:
@@ -402,7 +408,8 @@ class XMLBibleParser:
     
     def _get_verse_element(self, chapter, verse_index):
         """
-        TODO
+        Retourne le noeud du verset dont le numéro est passé en argument.
+        Le chapitre doit-être donné en premier argument en tant que noeud DOM.
         """
         verse = chapter.find('./v[@n="{}"]'.format(verse_index))
         if verse is None:
@@ -413,7 +420,9 @@ class XMLBibleParser:
     
     def _build_chapter_range(self, book, attr):
         """
-        TODO
+        Construit un intervalle dense d'indices de chapitres à partir d'une
+        référence.
+        Le livre doit-être donné en premier argument en tant que noeud DOM.
         """
         # Sélectionne tous les chapitres
         if attr["chapter_low"] == -1:
@@ -434,7 +443,9 @@ class XMLBibleParser:
     
     def _build_verse_range(self, chapter, attr):
         """
-        TODO
+        Construit un intervalle dense d'indices de versets à partir d'une
+        référence.
+        Le chapitre doit-être donné en premier argument en tant que noeud DOM.
         """
         # Sélectionne tous les versets du chapitre
         if attr["verse_low"] == -1:
