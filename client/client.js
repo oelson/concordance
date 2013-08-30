@@ -959,6 +959,9 @@ function handleContextResponse(res)
     // à cet instant, cette variable désigne le noeud <blockquote> du verset
     // clé
     lastContextualQueryReference.scrollIntoView();
+    if (!bottomBar.style.height) {
+        bottomBar.style.height = "50%";
+    }
     lastContextualQueryReference = null;
 }
 

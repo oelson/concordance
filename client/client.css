@@ -386,7 +386,7 @@ td#bottom
     padding: 0;
     box-sizing: border-box;
     vertical-align: top;
-    /*height: 1px;*/
+    height: 1px;
 }
 
 section#lecture
