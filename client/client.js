@@ -346,7 +346,7 @@ function reinitForm()
     cleanReferenceList();
     hideBookSuggestion();
     filterForm.reset();
-    saveFormState();
+    localStorage.clear();
     location.hash = "";
 }
 
