@@ -41,6 +41,10 @@ def handle(self, data):
     Récupère un message JSON de la connection WebSocket
     """
     data = json.loads(data)
+    # token à renvoyer en l'état
+    if "tok" not in data:
+        self.error("no token given")
+        return
     # traduction de la bible à utiliser pour la recherche
     if "tra" not in data or data["tra"] not in bible_translations:
         self.error("no or bad translation given")
@@ -56,6 +60,51 @@ def handle(self, data):
         )
     parser = self.bibles[data["tra"]]
     parser.clean()
+    # le token permet de sélectionner le service approprié
+    if data["tok"] == "search":
+        resp = handleSearchRequest(parser, data)
+        resp = json.dumps(resp)
+        self.send(resp)
+    elif data["tok"] == "context":
+        resp = handleContextRequest(parser, data)
+        resp = json.dumps(resp)
+        self.send(resp)
+    else:
+        self.error('unknown token "{}"'.format(data["tok"]))
+
+def extract_verses(parser):
+    """
+    Parcours les versets sélectionnés par le parseur et les retournes formatés
+    dans une liste.
+    """
+    verses = []
+    for m in parser:
+        ref = "{} {}.{}".format(m[0], m[1], m[2])
+        verses.append({
+            "ref": ref,
+            "verse": m[3]
+        })
+    return verses
+
+def handleContextRequest(parser, data):
+    """
+    Traite une requête de contexte.
+    """
+    # sélectionne la référence principale et son contexte
+    parser.add_contextual_reference(data["ref"])
+    # itère sur les versets correspondants
+    verses = extract_verses(parser)
+    response = {
+        "res": verses,
+        "now": int(round(time() * 1000)),
+        "tok": data["tok"]
+    }
+    return response
+
+def handleSearchRequest(parser, data):
+    """
+    Traite une recherche par mots-clés.
+    """
     # correspondance avec des mots-entiers
     if "bou" in data:
         parser.set_word_boundary(data["bou"])
@@ -83,16 +132,13 @@ def handle(self, data):
     # préfixe les résultats par des tirets
     parser.enable_highlighting("_")
     # itère sur les versets correspondants
-    res = []
-    for m in parser:
-        ref = "{} {}.{}".format(m[0], m[1], m[2])
-        res.append({
-            "ref": ref,
-            "verse": m[3]
-        })
-    resp = {"res": res, "now": int(round(time() * 1000))}
-    resp = json.dumps(resp)
-    self.send(resp)
+    verses = extract_verses(parser)
+    response = {
+        "res": verses,
+        "now": int(round(time() * 1000)),
+        "tok": data["tok"]
+    }
+    return response
 
 """
 Obtention de la liste des fichier XML disponnibles
