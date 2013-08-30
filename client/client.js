@@ -64,6 +64,9 @@ var connectInterval = null;
 var focusedBookLi = null;
 var oldFilterBarValue = "";
 
+var verticalResizeProceeding,
+    horizontalResizeProceeding;
+
  var accentMapping = [
     "ÀÁÂÄÆA",
     "àáâäæa",
@@ -816,9 +819,6 @@ function dictToQueryString(dict)
 /**
  * Redimensionnement
  */
-
-var verticalResizeProceeding,
-    horizontalResizeProceeding;
 
 /*
  * Vertical
