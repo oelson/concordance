@@ -93,6 +93,8 @@ def handleContextRequest(parser, data):
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"])
     # itère sur les versets correspondants
+    # TODO il faut passer des informations plus pertinentes:
+    # LISTE(Nom du livre, chapitre, indexes haut et bas)
     verses = extract_verses(parser)
     response = {
         "res": verses,

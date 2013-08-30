@@ -288,6 +288,7 @@ class XMLBibleParser:
 
     def _parse_verse(self, book, chapter, verse):
         """
+        TODO
         """
         if verse.text is None:
             return
