@@ -34,6 +34,10 @@ class XMLBibleParser:
         "ùúûüu"
     ]
 
+    # Nombre de versets à sélectionner autours d'une référence lors d'un
+    # élargissement
+    _context_size = 20
+
     _mandatory_keywords = []
     _one_of_keywords    = []
     _none_of_keywords   = []
