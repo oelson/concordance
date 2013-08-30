@@ -63,6 +63,7 @@ var lastTimestampReceived = null;
 var connectInterval = null;
 var focusedBookLi = null;
 var oldFilterBarValue = "";
+var lastTranslationUsed = null;
 
 var verticalResizeProceeding,
     horizontalResizeProceeding;
@@ -681,6 +682,7 @@ function restoreFormState()
 {
     if ("tra" in localStorage) {
         filterForm.elements["traduction"].value = localStorage["tra"];
+        lastTranslationUsed = localStorage["tra"];
     }
     if ("all" in localStorage) {
         filterForm.elements["conjonction"].value = localStorage["all"];
@@ -768,6 +770,7 @@ function requestServerForSearch()
         "acc": filterForm.elements["accent"].checked,
         "tok": "search"
     };
+    lastTranslationUsed = filterForm.elements["traduction"].value;
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;
     var noneWords  = filterForm.elements["aucun"].value;
@@ -805,7 +808,7 @@ function requestServerForContext(ref)
         "now": new Date().getTime(),
         "ref": ref,
         "tok": "context",
-        "tra": filterForm.elements["traduction"].value // TODO utiliser la traduction du verset affiché
+        "tra": lastTranslationUsed
     };
     var jsonData = JSON.stringify(dict);
     s.send(jsonData);
