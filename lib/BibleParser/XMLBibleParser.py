@@ -49,7 +49,7 @@ class XMLBibleParser:
     class ReferenceError(ValueError):
         pass
     
-    def __init__(self, xml, lexicon=None):
+    def __init__(self, xml):
         if isinstance(xml, Element):
             self.bible = xml
         elif isinstance(xml, str):
@@ -57,9 +57,6 @@ class XMLBibleParser:
             self.bible = tree.parse(xml)
         else:
             raise ValueError("'xml' argument is not an 'ElementTree' instance nor a path to a XML file")
-        if lexicon is not None and not isinstance(lexicon, LexicalContext):
-            raise ValueError("'lexicon' parameter is not a 'LexicalContext' instance")
-        self.lexicon = lexicon
 
     def add_reference(self, reference):
         """
@@ -368,9 +365,6 @@ class XMLBibleParser:
         # barrière de concordance avec les mots-clés
         if not self._verse_match_rules(verse.text):
             return
-        # mise-à-jour du lexique
-        if self.lexicon:
-            self.lexicon.update(verse.text)
         text = verse.text if self._highlight_prefix is None else \
                self._prefix_matches(verse.text)
         return (
