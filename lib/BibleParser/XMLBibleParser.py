@@ -15,7 +15,7 @@ class XMLBibleParser:
     # Masque d'extraction des éléments composant une référence
     _regex_extract_reference = re.compile(
         """^"""
-        """(?P<book>([123] )?\w+)"""
+        """(?P<book>([123] )?[\w ]+)"""
         """( (((?P<chapter_low>\d+)(-(?P<chapter_high>\d+))?)"""
         """|(?P<no_chapter_index>\*))"""
         """(\.((?P<verse_low>\d+)(-(?P<verse_high>\d+))?"""
