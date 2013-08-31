@@ -1068,30 +1068,16 @@ function Reference(referenceStr)
 {
     this.referenceStr = referenceStr;
     
-    this.book    = null;
+    this.book = null;
     this.chapterRange = {"low": null, "high": null};
-    this.verseRange   = {"low": null, "high": null};
-    
-    /*
-     * Construit une expression de reconnaissance de références valides.
-     */
-    
-    var w = "a-zA-Z";
-    for (var i=0, s; i < accentMapping.length; ++i) {
-        s = accentMapping[i].slice(0,-1);
-        w += s;
-    }
-    w = "["+w+"]";
-    
-    var d = "[0-9]";
-    
-    this.testReference = new RegExp("^(([123] )?"+w+"+)( "+d+"+(-"+d+"+)?(\\."+d+"+(-"+d+"+)?)?)?$");
+    this.verseRange = {"low": null, "high": null};
     
     /*
      * Reconstruit la référence de manière propre.
      */
     
-    this.serialize = function() {
+    this.serialize = function()
+    {
         var ref = this.book;
         if (this.chapterRange["low"]) {
             ref += " " + this.chapterRange["low"];
@@ -1107,60 +1093,100 @@ function Reference(referenceStr)
         }
         return ref;
     };
+
+    /*
+     * Vérifie un nom de livre
+     */
+    
+    this.chekBookName = function(book)
+    {
+        var list = bookListOl.children;
+        for (var i=0, li; i < list.length; ++i) {
+            li = list[i];
+            if (book == li.textContent) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /*
+     * Extrait un intervalle.
+     */
+    
+    this.extractRange = function(s, dest)
+    {
+        var pair = s.split("-");
+        var low  = null,
+            high = null;
+        if (pair.length < 1 || pair.length > 2) {
+            return false;
+        }
+        if (!/^[0-9]+$/.test(pair[0])) {
+            return false;
+        }
+        low = parseInt(pair[0]);
+        if (pair.length == 2) {
+            if (!/^[0-9]+$/.test(pair[1])) {
+                return false;
+            }
+            high = parseInt(pair[1]);
+        }
+        if (high !== null) {
+            if (high <= low) {
+                return false;
+            }
+        }
+        dest["low"]  = low;
+        dest["high"] = high
+        return true;
+    }
     
     /*
      * Découpe la référence pour en extraire les propriétés.
-     * Il est obligatoire de trouver au moins le nom de chapitre.
+     * Il est obligatoire de trouver au moins le nom de livre.
      */
 
-    this.parse = function() {
-        // Test préliminaire de reconnaissance
-        if (!this.testReference.test(this.referenceStr)) {
-            return false;
-        }
-        var fragments = this.referenceStr.split(/\s+/);
-        if (fragments.length < 1) return false;
-        /* Extrait le nom du livre
+    this.parse = function()
+    {
+        var bookName;
+        var index = 0;
+        // découpe l'entrée sur les espaces
+        var pieces = this.referenceStr.split(/\s+/);
+        /* Nom du livre
          */
-        this.book = fragments[0];
-        // le premier élément est le numéro du livre
-        if (isNaN(fragments[0])) {
-            fragments = fragments.slice(1,fragments.length);
-        } else {
-            this.book += " " + fragments[1];
-            fragments = fragments.slice(2,fragments.length);
+        if (!isNaN(pieces[index])) {
+            // le nom du livre commence par un nombre
+            ++index;
         }
-        // vérification du nom du livre
-        var found = false, list = bookListOl.children;
-        for (var i=0, li; i < list.length; ++i) {
-            li = list[i];
-            if (this.book == li.textContent) {
-                found = true;
-                break;
-            }
+        // tant que les éléments ne contiennent pas de nombre (auquel cas nous
+        // sommes arrivés aux indexes de chapitre)
+        while (index < pieces.length && !(/[0-9]/.test(pieces[index]))) {
+            ++index;
         }
-        if (!found) {
+        bookName = pieces.slice(0, index).join(" ");
+        if (!this.chekBookName(bookName)) {
+            console.error('unknown book name "'+bookName+'"');
             return false;
         }
-        // Le nom du livre n'est pas suivi d'autres informations
-        if (fragments.length == 0) {
+        this.book = bookName;
+        /* Chapitre
+         */
+        if (index == pieces.length) {
+            // la référence ne contenait que lo nom du livre
             return true;
         }
-        /* Extraction de l'intervalle des chapitres
-         */
-        fragments = fragments[0].split(".");
-        var pair = fragments[0].split("-");
-        this.chapterRange["low"]  = pair[0];
-        if (pair.length == 2) {
-            this.chapterRange["high"] = pair[1];
+        pieces = pieces[index].split(".");
+        // L'indexe des chapitres est donné seul
+        if (!this.extractRange(pieces[0], this.chapterRange)) {
+            console.error('bad chapter range "'+pieces[0]+'"');
+            return false;
         }
-        /* Extraction de l'intervalle des versets
-         */
-        if (fragments.length == 2) {
-            pair = fragments[1].split("-");
-            this.verseRange["low"]  = pair[0];
-            if (pair.length == 2) {
-                this.verseRange["high"] = pair[1];
+        // L'indexe des chapitres est donné avec l'index des versets
+        if (pieces.length > 1) {
+            if (!this.extractRange(pieces[1], this.verseRange)) {
+                console.error('bad verse range "'+pieces[1]+'"');
+                return false;
             }
         }
         return true;
