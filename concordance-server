@@ -32,7 +32,7 @@ from xml.etree import ElementTree
 
 # Nombre de versets à sélectionner autours d'une référence lors d'un
 # élargissement
-context_size = 20
+context_size = 5
 
 def init(self):
     """
