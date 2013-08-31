@@ -1007,14 +1007,14 @@ function handleContextResponse(res)
             }
         }
     }
+    if (!bottomBar.style.height) {
+        bottomBar.style.height = "50%";
+    }
     // à cet instant, cette variable désigne le noeud <blockquote> du verset
     // clé
     if (lastContextualQueryBlockQuote) {
         lastContextualQueryBlockQuote.scrollIntoView();
         lastContextualQueryBlockQuote = null;
-    }
-    if (!bottomBar.style.height) {
-        bottomBar.style.height = "50%";
     }
 }
 
