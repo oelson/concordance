@@ -41,7 +41,7 @@ class XMLBibleParser:
     
     references = {}
     
-    _accent_sensitivity = True
+    _accent_sensitivity = False
     _case_sensitive     = False
     _word_boundary      = True
     _highlight_prefix   = None
