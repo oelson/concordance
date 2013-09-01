@@ -232,7 +232,7 @@ class XMLBibleParser:
         """
         self._highlight_prefix = None
 
-    def _parse_verse(self, book, chapter, verse):
+    def _parse_verse(self, book_element, chapter_element, verse_element):
         """
         Vérifie qu'un verset (donné par son noeud) satisfait les exigences de
         la recherche par mots-clés.
@@ -241,17 +241,17 @@ class XMLBibleParser:
         Retourne un quadruplet contenant le nom du livre, les indices du
         chapitre et du verset, et son texte.
         """
-        if verse.text is None:
+        if verse_element.text is None:
             return
         # barrière de concordance avec les mots-clés
-        if not self._verse_match_rules(verse.text):
+        if not self._verse_match_rules(verse_element.text):
             return
-        text = verse.text if self._highlight_prefix is None else \
-               self._prefix_matches(verse.text)
+        text = verse_element.text if self._highlight_prefix is None else \
+               self._prefix_matches(verse_element.text)
         return (
-            book.attrib["n"],
-            int(chapter.attrib["n"]),
-            int(verse.attrib["n"]),
+            book_element.attrib["n"],
+            int(chapter_element.attrib["n"]),
+            int(verse_element.attrib["n"]),
             text
         )
 
