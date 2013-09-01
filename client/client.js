@@ -918,6 +918,8 @@ function initHorizontalResize(e)
         "initial_w": rightBar.offsetWidth,
         "initial_x": e.clientX
     };
+    continueHorizontalResize(e);
+    filterForm.classList.add("null");
     e.preventDefault();
 }
 
