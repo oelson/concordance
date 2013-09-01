@@ -345,23 +345,48 @@ class XMLBibleParser:
         """
         # Parcours toute la bible en cas d'absence de référence
         if not self.references:
-            for book in self.bible.iterfind("./b"):
-                for chapter in book.iterfind("./c"):
-                    for verse in chapter.iterfind("./v"):
-                        res = self._parse_verse(book, chapter, verse)
+            for book_element in self.bible.iterfind("./b"):
+                for chapter_element in book_element.iterfind("./c"):
+                    for verse_element in chapter_element.iterfind("./v"):
+                        res = self._parse_verse(
+                            book_element,
+                            chapter_element,
+                            verse_element
+                        )
                         if res is not None:
                             yield res
         # Parcours uniquement des références précises
         else:
-            for ref in self.references:
-                attr = self.references[ref]
-                book = self._get_book_element(attr["book"])
-                chapter_range = self._build_chapter_range(book, attr)
+            for reference in self.references:
+                bible_reference = self.references[reference]
+                # récupère le noeud du livre
+                book_element = self.get_book_element(bible_reference.book)
+                # construit l'intervalle des chapitres à parcourir
+                chapter_range = self._build_chapter_range(
+                    book_element,
+                    bible_reference
+                )
                 for chapter_index in chapter_range:
-                    chapter = self._get_chapter_element(book, chapter_index)
-                    verse_range = self._build_verse_range(chapter, attr)
+                    # récupère le noeud du chapitre
+                    chapter_element = self.get_chapter_element(
+                        book_element,
+                        chapter_index
+                    )
+                    # construit l'intervalle des versets à parcourir
+                    verse_range = self._build_verse_range(
+                        chapter_element,
+                        bible_reference
+                    )
                     for verse_index in verse_range:
-                        verse = self._get_verse_element(chapter, verse_index)
-                        res = self._parse_verse(book, chapter, verse)
+                        # accède au noeud du verset
+                        verse_element = self.get_verse_element(
+                            chapter_element,
+                            verse_index
+                        )
+                        res = self._parse_verse(
+                            book_element,
+                            chapter_element,
+                            verse_element
+                        )
                         if res is not None:
                             yield res
