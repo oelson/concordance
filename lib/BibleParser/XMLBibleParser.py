@@ -255,85 +255,87 @@ class XMLBibleParser:
             text
         )
 
-    def _get_book_element(self, book_name):
+    def get_book_element(self, book_name):
         """
         Retourne le noeud du livre dont le nom est passé en argument.
         """
-        book = self.bible.find('./b[@n="{}"]'.format(book_name))
-        if book is None:
-            raise XMLBibleParser.ReferenceError(
-                'invalid book name "{}"'.format(book_name)
-            )
-        return book
+        book_element = self.bible.find('./b[@n="{}"]'.format(book_name))
+        if book_element is None:
+            raise InvalidBookName(book_name)
+        return book_element
 
-    def _get_chapter_element(self, book, chapter_index):
+    def get_chapter_element(self, book_element, chapter_index):
         """
         Retourne le noeud du chapitre dont le numéro est passé en argument.
         Le livre doit-être donné en premier argument en tant que noeud DOM.
         """
-        chapter = book.find('./c[@n="{}"]'.format(chapter_index))
-        if chapter is None:
-            raise XMLBibleParser.ReferenceError(
-                'invalid chapter number "{}"'.format(chapter_index)
+        chapter_element = book_element.find('./c[@n="{}"]'.format(chapter_index))
+        if chapter_element is None:
+            raise InvalidChapterIndex(
+                book_element.attrib["n"],
+                chapter_index
             )
-        return chapter
+        return chapter_element
     
-    def _get_verse_element(self, chapter, verse_index):
+    def get_verse_element(self, chapter_element, verse_index):
         """
         Retourne le noeud du verset dont le numéro est passé en argument.
         Le chapitre doit-être donné en premier argument en tant que noeud DOM.
         """
-        verse = chapter.find('./v[@n="{}"]'.format(verse_index))
-        if verse is None:
-            raise XMLBibleParser.ReferenceError(
-                'invalid verse index "{}"'.format(verse_index)
+        verse_element = chapter_element.find('./v[@n="{}"]'.format(verse_index))
+        if verse_element is None:
+            raise InvalidVerseIndex(
+                "UNK_BOOK", # TODO element.getparent() ?
+                # book.attrib["n"],
+                chapter_element.attrib["n"],
+                verse_index
             )
-        return verse
+        return verse_element
     
-    def _build_chapter_range(self, book, attr):
+    def _build_chapter_range(self, book_element, bible_reference):
         """
         Construit un intervalle dense d'indices de chapitres à partir d'une
         référence.
         Le livre doit-être donné en premier argument en tant que noeud DOM.
         """
         # Sélectionne tous les chapitres
-        if attr["chapter_low"] == -1:
+        if bible_reference.chapter_low == -1:
             chapter_range = range(
                 1,
-                self._get_greatest_element_index(book, "c")+1
+                self.get_greatest_element_index(book_element, "c")+1
             )
         # Sélectionne un intervalle de chapitres
-        elif attr["chapter_high"] != -1:
+        elif bible_reference.chapter_high != -1:
             chapter_range = range(
-                attr["chapter_low"],
-                attr["chapter_high"]+1
+                bible_reference.chapter_low,
+                bible_reference.chapter_high+1
             )
         # Sélectionne un seul chapitre
         else:
-            chapter_range = (attr["chapter_low"],)
+            chapter_range = (bible_reference.chapter_low,)
         return chapter_range
     
-    def _build_verse_range(self, chapter, attr):
+    def _build_verse_range(self, chapter_element, bible_reference):
         """
         Construit un intervalle dense d'indices de versets à partir d'une
         référence.
         Le chapitre doit-être donné en premier argument en tant que noeud DOM.
         """
         # Sélectionne tous les versets du chapitre
-        if attr["verse_low"] == -1:
+        if bible_reference.verse_low == -1:
             verse_range = range(
                 1,
-                self._get_greatest_element_index(chapter, "v")+1
+                self.get_greatest_element_index(chapter_element, "v")+1
             )
         # Sélectionne un intervalle de versets
-        elif attr["verse_high"] != -1:
+        elif bible_reference.verse_high != -1:
             verse_range = range(
-                attr["verse_low"],
-                attr["verse_high"]+1
+                bible_reference.verse_low,
+                bible_reference.verse_high+1
             )
         # Sélectionne un seul verset
         else:
-            verse_range = (attr["verse_low"],)
+            verse_range = (bible_reference.verse_low,)
         return verse_range
 
     def __iter__(self):
