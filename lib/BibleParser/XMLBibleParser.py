@@ -1,10 +1,17 @@
+#-*- coding: utf-8 -*-
+
+__all__ = ["XMLBibleParser"]
+
 """
-TODO Créer une classe Reference() en Python similaire à celle en Javascript
+TODO ne pas déborder au delà d'un chapitre dans le contexte pour les Psaumes
 """
 
 import re
 
 from xml.etree.ElementTree import ElementTree, Element
+
+from BibleParser.BibleReference import BibleXMLReference
+from BibleParser.Errors import *
 
 class XMLBibleParser:
     """
@@ -12,17 +19,6 @@ class XMLBibleParser:
     Permet de rechercher par références et par mots-clés simultanément.
     """
 
-    # Masque d'extraction des éléments composant une référence
-    _regex_extract_reference = re.compile(
-        """^"""
-        """(?P<book>([123] )?[\w ]+)"""
-        """( (((?P<chapter_low>\d+)(-(?P<chapter_high>\d+))?)"""
-        """|(?P<no_chapter_index>\*))"""
-        """(\.((?P<verse_low>\d+)(-(?P<verse_high>\d+))?"""
-        """|(?P<no_verse_index>\*)))?)?"""
-        """$"""
-    )
-    
     _accent_mapping = [
         "ÀÁÂÄÆA",
         "àáâäæa",
@@ -49,10 +45,7 @@ class XMLBibleParser:
     _case_sensitive     = False
     _word_boundary      = True
     _highlight_prefix   = None
-    
-    class ReferenceError(ValueError):
-        pass
-    
+
     def __init__(self, xml):
         if isinstance(xml, Element):
             self.bible = xml
@@ -65,157 +58,29 @@ class XMLBibleParser:
     def add_reference(self, reference):
         """
         Ajoute une référence en l'état.
+        L'entrée est une chaîne, ce qui est stocké est une instance de la classe
+        "BibleXMLReference".
         """
-        attr = self.parse_reference(reference)
-        self.references[reference] = attr
+        bible_reference = BibleXMLReference(self, reference)
+        self.references[str(bible_reference)] = bible_reference
 
-    def add_contextual_reference(self, reference, left_lookahead, right_lookahead):
+    def add_contextual_reference(self,
+                                 reference,
+                                 left_lookahead,
+                                 right_lookahead):
         """
         Ajoute une référence simple en l'élargissant afin d'en faire ressortir
         le contexte.
         """
-        attr = self.parse_reference(reference)
-        for (new_book, new_chapter, new_verse_low, new_verse_high) in \
-                self._get_overflowing_references(
-                    attr["book"],
-                    attr["chapter_low"],
-                    attr["verse_low"],
-                    left_lookahead,
-                    right_lookahead
+        bible_reference = BibleXMLReference(self, reference)
+        for new_bible_reference in bible_reference.get_overflowing_references(
+                left_lookahead,
+                right_lookahead
                 ):
-            # construit une nouvelle référence
-            new_attr = {
-                "book": new_book,
-                "chapter_low": new_chapter,
-                "chapter_high": -1,
-                "verse_low":  new_verse_low,
-                "verse_high": new_verse_high,
-            }
-            new_reference = "{} {}.{}-{}".format(
-                new_attr["book"],
-                new_attr["chapter_low"],
-                new_attr["verse_low"],
-                new_attr["verse_high"]
-            )
             # ajoute la nouvelle référence
-            self.references[new_reference] = new_attr
-    
-    def _get_overflowing_references(self,
-                                    book,
-                                    chapter,
-                                    verse,
-                                    left_lookahead,
-                                    right_lookahead):
-        """
-        Obtient de manière récursive des références à partir d'une ancre
-        (l'index "verse") en débordant à droite et à gauche aussi loin que
-        nécessaire.
-        Est un itérateur.
-        """
-        # récupère les noeuds du DOM
-        book_element = self._get_book_element(book)
-        try:
-            chapter_element = self._get_chapter_element(book_element, chapter)
-        except XMLBibleParser.ReferenceError:
-            # Le livre a été entièrement parcouru à droite
-            return None
-        verse_element = self._get_verse_element(chapter_element, verse)
-        # initialise l'intervalle
-        verse_low  = -1
-        verse_high = -1
-        verse_count = self._get_greatest_element_index(chapter_element, "v")
-        ## Sélection à gauche
-        left_diff = verse - left_lookahead
-        if left_diff < 1:
-            try:
-                prev_chapt_element = self._get_chapter_element(book_element, chapter-1)
-            except XMLBibleParser.ReferenceError:
-                # Le livre a été entièrement parcouru à gauche
-                pass
-            else:
-                prev_chapt_size = self._get_greatest_element_index(prev_chapt_element, "v")
-                # il est nécessaire de sélectionner le chapitre précédent
-                for x in self._get_overflowing_references(
-                            book,
-                            chapter-1,
-                            # l'ancre devient le dernier verset du chapitre
-                            # précédent
-                            prev_chapt_size,
-                            -left_diff,
-                            0
-                        ):
-                    yield x
-            verse_low = 1
-        else:
-            verse_low = left_diff
-        ## Sélection à droite
-        right_diff = verse + right_lookahead
-        if right_diff > verse_count:
-            # il est nécessaire de sélectionner le chapitre suivant
-            verse_high = verse_count
-            for x in self._get_overflowing_references(
-                        book,
-                        chapter+1,
-                        # l'ancre devient le premier verset du chapitre suivant
-                        1,
-                        0,
-                        right_diff - verse_count - 1
-                    ):
-                yield x
-        else:
-            verse_high = right_diff
-        # Retour
-        yield (book, chapter, verse_low, verse_high)
+            self.references[str(new_bible_reference)] = new_bible_reference
 
-    def parse_reference(self, reference):
-        """
-        Extrait les attributs d'une référence biblique sous la forme d'un
-        dictionnaire.
-        """
-        match = XMLBibleParser._regex_extract_reference.match(reference)
-        if match is None:
-            raise XMLBibleParser.ReferenceError(
-                'invalid reference "{}"'.format(reference)
-            )
-        attr = match.groupdict()
-        # Extraction des attributs du livre
-        if attr['book'] is None:
-            raise XMLBibleParser.ReferenceError("no book given")
-        # Extraction des attributs des chapitres
-        if attr['chapter_low'] is None:
-            if attr['no_chapter_index'] is not None:
-                attr['chapter_low'] = -1
-            # Permet une sélection globale par omission à condition de ne
-            # pas spécifier plus précis quand on ommet moins précis
-            else:
-                if attr['verse_low'] is None:
-                    attr['chapter_low'] = -1
-                else:
-                    raise XMLBibleParser.ReferenceError("no chapter given")
-        else:
-            attr['chapter_low'] = int(attr['chapter_low'])
-            if attr['chapter_high'] is not None:
-                attr['chapter_high'] = int(attr['chapter_high'])
-                if attr['chapter_low'] >= attr['chapter_high']:
-                    raise XMLBibleParser.ReferenceError(
-                        "invalid chapter range"
-                    )
-            else:
-                attr['chapter_high'] = -1
-        # Extraction des attributs des versets
-        if attr['verse_low'] is None:
-                attr['verse_low'] = -1
-        else:
-            attr['verse_low'] = int(attr['verse_low'])
-            if attr['verse_high'] is not None:
-                attr['verse_high'] = int(attr['verse_high'])
-                if attr['verse_low'] >= attr['verse_high']:
-                    raise XMLBibleParser.ReferenceError("invalid verse range")
-            else:
-                attr['verse_high'] = -1
-        return attr
-
-    def _get_greatest_element_index(self, root, element):
+    def get_greatest_element_index(self, root, element):
         """
         Retourne le plus grand index (attribut "n") des sous-éléments du
         noeud racine /root/.
