@@ -228,6 +228,7 @@ class XMLBibleParser:
 
     def disable_highlighting(self):
         """
+        Désactive le préfixage des correspondances.
         """
         self._highlight_prefix = None
 
