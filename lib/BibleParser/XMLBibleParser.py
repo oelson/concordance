@@ -47,6 +47,11 @@ class XMLBibleParser:
     _highlight_prefix   = None
 
     def __init__(self, xml):
+        """
+        Le 1er argument doit-être:
+            ° soit une instance de "Element" (un noeud racine de la bible)
+            ° soit un chemin vers un fichier XML de la bible
+        """
         if isinstance(xml, Element):
             self.bible = xml
         elif isinstance(xml, str):
@@ -97,6 +102,7 @@ class XMLBibleParser:
         """
         Cherche à reconnaitre au moins un mot-clé dans le verset donné en
         argument.
+        L'argument est une chaîne.
         """
         # mots étants _tous_ obligatoires
         for r in self._mandatory_keywords:
