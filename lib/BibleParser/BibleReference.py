@@ -229,17 +229,89 @@ class BibleXMLReference(BibleReference):
             "v"
         )
 
-    def _get_previous_chapter_size(self):
+    def _get_overflowing_references(self,
+                                    verse_index,
+                                    chapter_index,
+                                    left_lookahead,
+                                    right_lookahead,
+                                    chapter_element=None):
         """
-        Obtient la taille du chapitre précédent à partir du chapitre _courant_.
-        Ignore le cas où la référence comporte un intervalle de versets
-        (choisi la borne basse de l'intervalle).
+        Obtient de manière récursive des références en débordant à droite et à
+        gauche aussi loin que nécessaire.
+        Est un itérateur.
         """
-        prev_chapt_element = self.xml_bible_parser.get_chapter_element(
-            self._get_xml_book_element(),
-            self.chapter_low-1
+        if chapter_element is None:
+            # Assume that the chapter to find is given by "chapter_index"
+            chapter_element = self.xml_bible_parser.get_chapter_element(
+                self._get_xml_book_element(),
+                chapter_index
+            )
+        # Sélectionne à gauche
+        new_verse_low = verse_index - left_lookahead
+        if new_verse_low < 1:
+            # il est nécessaire de rechercher dans le chapitre précédent
+            try:
+                prev_chapter_element = self.xml_bible_parser.get_chapter_element(
+                    self._get_xml_book_element(),
+                    chapter_index
+                )
+            except InvalidChapterIndex:
+                # l'itérateur s'arrête en cas de chapitre inexistant
+                # ici, le premier chapitre du livre a été atteint
+                pass
+            else:
+                prev_chapt_size = self._get_chapter_size(prev_chapter_element)
+                # itère récursivement "à gauche" en intanciant une nouvelle
+                # référence
+                for r in self._get_overflowing_references(
+                        # l'ancre devient le dernier verset du chapitre
+                        # précédent
+                        prev_chapt_size,
+                        chapter_index-1,
+                        -new_verse_low,
+                        0,
+                        # donne directement le noeud précédent pour éviter un
+                        # parcours supplémentaire du DOM
+                        chapter_element=prev_chapter_element
+                        ):
+                    yield r
+            # le verset le plus à gauche qui nous intéresse est borné au premier
+            # verset du chapitre _courant_
+            new_verse_low = 1
+        # Sélectionne à droite
+        new_verse_high = verse_index + right_lookahead
+        to_yield = []
+        # obtient la taille du chapitre
+        chapter_size = self._get_chapter_size()
+        if new_verse_high > chapter_size:
+            # il est nécessaire de rechercher dans le chapitre suivant
+            # itère récursivement "à droite"
+            for r in self._get_overflowing_references(
+                    # l'ancre devient le premier verset du chapitre suivant
+                    1,
+                    chapter_index+1,
+                    0,
+                    new_verse_high - chapter_size - 1
+                    ):
+                # Do not field those references now
+                to_yield.append(r)
+            # le verset le plus à droite qui nous intéresse est borné au dernier
+            # verset du chapitre _courant_
+            new_verse_high = chapter_size
+        # À une itération donnée, retourne toujours une référence pointant sur
+        # le même livre et le même chapitre
+        yield BibleXMLReference(
+            self.xml_bible_parser,
+            None,
+            self.book,
+            chapter_index,
+            -1,
+            new_verse_low,
+            new_verse_high
         )
-        return self._get_chapter_size(prev_chapt_element)
+        # Yield references from the right overflow after the _current_ reference
+        for r in to_yield:
+            yield r
 
     def get_overflowing_references(self,
                                    left_lookahead,
@@ -247,76 +319,14 @@ class BibleXMLReference(BibleReference):
         """
         Obtient de manière récursive des références en débordant à droite et à
         gauche aussi loin que nécessaire.
-        Est un itérateur.
         """
-        # sélectionne à gauche
-        new_verse_low = self.verse_low - left_lookahead
-        if new_verse_low < 1:
-            # il est nécessaire de rechercher dans le chapitre précédent
-            try:
-                prev_chapt_size = self._get_previous_chapter_size()
-            except InvalidChapterIndex:
-                # l'itérateur s'arrête en cas de chapitre inexistant
-                # ici, le premier chapitre du livre a été atteint
-                pass
-            else:
-                # itère récursivement "à gauche" en intanciant une nouvelle
-                # référence
-                new_bible_reference = BibleXMLReference(
-                    self.xml_bible_parser,
-                    None,
-                    self.book,
-                    self.chapter_low-1,
-                    -1,
-                    # l'ancre devient le dernier verset du chapitre
-                    # précédent
-                    prev_chapt_size,
-                    -1
-                )
-                for x in new_bible_reference.get_overflowing_references(
-                        -new_verse_low,
-                        0
-                        ):
-                    yield x
-            # le verset le plus à gauche qui nous intéresse est borné au premier
-            # verset du chapitre _courant_
-            new_verse_low = 1
-        # sélectionne à droite
-        new_verse_high = self.verse_low + right_lookahead
-        # obtient la taille du chapitre
-        chapter_size = self._get_chapter_size()
-        if new_verse_high > chapter_size:
-            # il est nécessaire de rechercher dans le chapitre suivant
-            # itère récursivement "à droite"
-            new_bible_reference = BibleXMLReference(
-                self.xml_bible_parser,
-                None,
-                self.book,
-                self.chapter_low+1,
-                -1,
-                # l'ancre devient le premier verset du chapitre suivant
-                1,
-                -1
-            )
-            for x in new_bible_reference.get_overflowing_references(
-                    0,
-                    new_verse_high - chapter_size - 1
-                    ):
-                yield x
-            # le verset le plus à droite qui nous intéresse est borné au dernier
-            # verset du chapitre _courant_
-            new_verse_high = chapter_size
-        # à une itération donnée, retourne toujours une référence pointant sur
-        # le même livre et le même chapitre
-        new_bible_reference = BibleXMLReference(
-            self.xml_bible_parser,
-            None,
-            self.book,
-            self.chapter_low,
-            -1,
-            new_verse_low,
-            new_verse_high
-        )
-        yield new_bible_reference
+        if left_lookahead < 1 or right_lookahead < 1:
+            raise ValueError("need lookahead quantities greater than 1")
+        return [r for r in self._get_overflowing_references(
+                self.verse_low,
+                self.chapter_low,
+                left_lookahead,
+                right_lookahead
+        )]
    
     
