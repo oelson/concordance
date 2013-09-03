@@ -183,15 +183,14 @@ span.delete
     display: inline-block;
     width:  16px;
     height: 16px;
-    opacity: .66;
 }
 
 span.delete
 {
+    opacity: .66;
     background-image: url("res/img/close-button.png");
 }
 
-span.valid:hover,
 span.delete:hover
 {
     opacity: 1;
