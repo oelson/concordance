@@ -116,7 +116,7 @@ function init()
     contextTab = document.getElementById("tab-context");
     readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
-    readSection = document.getElementById("lecture");
+    readSection = document.getElementById("context");
     // Formulaire de recherche
     filterForm.addEventListener("submit", function(e) {
         e.preventDefault();

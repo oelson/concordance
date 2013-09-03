@@ -351,7 +351,7 @@ td#bottom
     height: 1px;
 }
 
-section#lecture
+section#context
 {
     padding: 8px;
     font-family: RobotoSlab;
@@ -364,7 +364,7 @@ section#lecture
  * Nom de livre
  */
 
-section#lecture h1
+section#context h1
 {
     font-weight: 700;
     color: #B9B9B9;
@@ -374,13 +374,13 @@ section#lecture h1
  * Numéro de chapitre
  */
 
-section#lecture h2
+section#context h2
 {
     font-weight: 400;
     color: #7C7C7C;
 }
 
-section#lecture h2::before
+section#context h2::before
 {
     content: "Chapitre ";
 }
@@ -389,7 +389,7 @@ section#lecture h2::before
  * Numéro du verset
  */
 
-section#lecture span
+section#context span
 {
     color: #E75E54;
     font-size: .8em;
@@ -397,7 +397,7 @@ section#lecture span
     line-height: 1em;
 }
 
-section#lecture blockquote
+section#context blockquote
 {
     display: inline;
 }
@@ -406,7 +406,7 @@ section#lecture blockquote
  * Verset clé dans son contexte
  */
 
-section#lecture mark
+section#context mark
 {
     background-color: #FFF8A2; 
 }
