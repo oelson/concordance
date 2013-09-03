@@ -316,6 +316,12 @@ table#resultats_recherche > tbody > tr > td:nth-of-type(1) > a
     font-weight: 300;
 }
 
+table#resultats_recherche > tbody > tr > td:nth-of-type(1) > a.active,
+table#resultats_recherche > tbody > tr > td:nth-of-type(1) > a:active
+{
+    color: red;
+}
+
 /*
  * Section basse de l'écran
  */

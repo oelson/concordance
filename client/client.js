@@ -71,6 +71,8 @@ var verticalResizeProceeding,
 var lastContextualQueryReference  = null,
     lastContextualQueryBlockQuote = null;
 
+var activeReferenceLink = null;
+
  var accentMapping = [
     "ÀÁÂÄÆA",
     "àáâäæa",
@@ -287,9 +289,13 @@ function addVerseToSearchList(ref, verse)
         td2 = document.createElement("td");
     var tbody = resultTable.tBodies[0];
     var a = document.createElement("a");
-    //a.href = "#ref="+encodeURIComponent(ref);
     a.addEventListener("click", function(e) {
         requestServerForContext(ref);
+        if (activeReferenceLink) {
+            activeReferenceLink.classList.remove("active");
+        }
+        this.classList.add("active");
+        activeReferenceLink = this;
     }, false);
     a.classList.add("decore-hover");
     a.appendChild(document.createTextNode(ref));
