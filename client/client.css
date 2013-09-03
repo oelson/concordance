@@ -320,6 +320,7 @@ table#resultats_recherche > tbody > tr > td:nth-of-type(1) > a.active,
 table#resultats_recherche > tbody > tr > td:nth-of-type(1) > a:active
 {
     color: red;
+    text-decoration: underline;
 }
 
 /*

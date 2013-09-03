@@ -113,6 +113,7 @@ function init()
     rightBar = document.getElementById("right");
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
+    contextTab = document.getElementById("tab-context");
     readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
     readSection = document.getElementById("lecture");
