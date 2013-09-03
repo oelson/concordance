@@ -93,7 +93,7 @@ var lastContextualQueryReference  = null,
 
 function init()
 {
-    // get
+    // Accès à divers éléments du DOM
     bookListOl = document.getElementById("book_list");
     filterForm = document.forms["filtre"];
     resultTable = document.getElementById("resultats_recherche");
@@ -111,25 +111,31 @@ function init()
     rightBar = document.getElementById("right");
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
-    readTab = document.getElementById("tab-read")
+    readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
     readSection = document.getElementById("lecture");
-    // action
-    filterForm.addEventListener("submit", enu, false);
-    filterForm.addEventListener("submit", requestServerForSearch, false);
+    // Formulaire de recherche
+    filterForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        requestServerForSearch();
+    }, false);
+    // Champs de filtrage par mots-clés
+    var requiredInputs = filterForm.getElementsByClassName("required");
+    for (var i=0, inp; i < requiredInputs.length; ++i) {
+        inp = requiredInputs[i];
+        // Le bouton de recherche n'est activé que dans le cas où un mot-clé est
+        // saisis (et si la connection est active)
+        inp.addEventListener("keyup", toggleLaunchButton, false);
+    }
+    // Barre de recherche des références
     filterBar.addEventListener("keyup", handleFilterBarKeyUp, false);
     filterBar.addEventListener("keydown", handleFilterBarKeyDown, false);
-    filterBar.addEventListener("blur", submitReference, false);
-    filterBar.addEventListener("blur", hideBookSuggestion, false);
-    window.addEventListener("keydown", handleGlobalKeyDown, false);
-    reinitButton.addEventListener("click", reinitForm, false);
-    reinitButton.addEventListener("click", enu, false);
-    cleanButton.addEventListener("click", cleanSearchList, false);
-    cleanButton.addEventListener("click", cleanContextList, false);
-    cleanButton.addEventListener("click", enu, false);
-    suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
-    //window.addEventListener("hashchange", handleHashChange, false);
-    // selectionne un nom de livre par click
+    // Essaye de valider la référence en cours si jamais le focus part
+    filterBar.addEventListener("blur", function(e) {
+        hideBookSuggestion();
+        submitReference();
+    }, false);
+    // Selectionne un nom de livre par click dans la boîte à suggestions
     var list = bookListOl.children, n=0;
     for (var i=0, li; i < list.length; ++i) {
         li = list[i];
@@ -137,15 +143,30 @@ function init()
             selectBookItem(this);
         }, false);
     }
-    // resize
+    // Ferme la boîte à suggestions
+    suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
+    // Réinitialisation du formulaire
+    reinitButton.addEventListener("click", function(e) {
+        e.preventDefault();
+        reinitForm();
+    }, false);
+    // Nettoyage des résultats de la recherche
+    cleanButton.addEventListener("click", function(e) {
+        e.preventDefault();
+        cleanSearchList();
+        cleanContextList();
+    }, false);
+    // Redimensionnement vertical
     verticalResizeBar.addEventListener("mousedown", initVerticalResize, false);
     window.addEventListener("mousemove", continueVerticalResize, false);
     window.addEventListener("mouseup", stopVerticalResize, false);
+    // Redimensionnement horizontal
     horizontalResizeBar.addEventListener("mousedown", initHorizontalResize, false);
     window.addEventListener("mousemove", continueHorizontalResize, false);
     window.addEventListener("mouseup", stopHorizontalResize, false);
-    // WS
+    // Retaure éventuellement l'état précédent du formulaire
     restoreFormState();
+    // Connection au serveur Websocket
     connectToServer();
 }
 
@@ -153,7 +174,6 @@ document.addEventListener("DOMContentLoaded", init, false);
 
 // permet de filtrer les éléments nuls avec la méthode "Array.filter"
 function ret(e) { return e; }
-function enu(e) { e.preventDefault(); }
 
 /**
  * Gestion de l'UI
@@ -372,10 +392,8 @@ function cleanContextList()
 function reinitForm()
 {
     cleanReferenceList();
-    hideBookSuggestion();
     filterForm.reset();
     localStorage.clear();
-    location.hash = "";
 }
 
 /*
@@ -384,10 +402,19 @@ function reinitForm()
 
 function isFormSubmitable()
 {
-    if (s && s.readyState == WebSocket.OPEN) {
-        return true;
+    // Refuse la soumission si aucun mot-clé n'est donné
+    if (!(filterForm.elements["conjonction"].value) &&
+        !(filterForm.elements["quelconque"].value)  &&
+        !(filterForm.elements["aucun"].value)       &&
+        !(filterForm.elements["nombres_min"].value) &&
+        !(filterForm.elements["nombres_max"].value))
+    {
+        return false;
     }
-    return false;
+    if (!s || s.readyState != WebSocket.OPEN) {
+        return false;
+    }
+    return true;
 }
 
 /*
@@ -500,46 +527,6 @@ function selectBookItem(li)
 }
 
 /*
- * Capture les frappes clavier depuis la fenêtre en général.
- */
-
-function handleGlobalKeyDown(e)
-{
-    switch (e.keyIdentifier) {
-    // Sélectionne une proposition
-    case "Enter":
-        if (focusedBookLi) {
-            selectBookItem(focusedBookLi);
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        break;
-    // Remonte dans la liste des références
-    case "Up":
-        if (!suggestionListSection.classList.contains("gone")) {
-            e.preventDefault();
-            focusPreviousBook();
-        }
-        break;
-    // Descend dans la liste des références
-    case "Down":
-        if (!suggestionListSection.classList.contains("gone")) {
-            e.preventDefault();
-            focusNextBook();
-        }
-        break;
-    // Échap
-    case "U+001B":
-        if (!suggestionListSection.classList.contains("gone")) {
-            hideBookSuggestion();
-            // Focus la barre de recherche
-            putCarretToEnd(filterBar);
-        }
-        break;
-    }
-}
-
-/*
  * Essaye de valider la référence se trouvant dans la barre de recherche.
  */
 
@@ -566,30 +553,37 @@ function handleFilterBarKeyDown(e)
     switch (e.keyIdentifier) {
     // Ajout de la référence
     case "Enter":
-        if (!suggestionListSection.classList.contains("gone")) {
-            // La frappe survient juste avant que le handler de l'objet "window"
-            // ne le capture
-            break;
-        }
-        submitReference();
         e.preventDefault();
+        if (focusedBookLi) {
+            selectBookItem(focusedBookLi);
+        } else {
+            submitReference();
+        }
         break;
     // Remonte dans la liste des références
     case "Up":
         e.preventDefault();
-        e.stopPropagation();
-        focusPreviousBook();
+        if (!suggestionListSection.classList.contains("gone")) {
+            focusPreviousBook();
+        }
         break;
     // Descend dans la liste des références
     case "Down":
+        e.preventDefault();
         if (!suggestionListSection.classList.contains("gone")) {
-            e.preventDefault();
-            e.stopPropagation();
             focusNextBook();
         }
         // La boîte a été cachée 
         else {
             suggestBook(filterBar.value);
+        }
+        break;
+    // Échap
+    case "U+001B":
+        if (!suggestionListSection.classList.contains("gone")) {
+            hideBookSuggestion();
+            // Focus la barre de recherche
+            putCarretToEnd(filterBar);
         }
         break;
     }
@@ -602,14 +596,9 @@ function handleFilterBarKeyDown(e)
 
 function handleFilterBarKeyUp(e)
 {
-    // Backspace
-    switch (e.keyIdentifier) {
-    case "U+0008":
-        // Éffacement complet du champs
-        if (!filterBar.value) {
-            referenceErrorSpan.classList.remove("error");
-        }
-        break;
+    // Éffacement complet du champs
+    if (!filterBar.value) {
+        referenceErrorSpan.classList.remove("error");
     }
     if (oldFilterBarValue != filterBar.value) {
         suggestBook(filterBar.value);
@@ -749,7 +738,7 @@ function restoreFormState()
         filterForm.elements["nombres_min"].value = range[0];
         filterForm.elements["nombres_max"].value = range[1];
     }
-    if ("ref" in localStorage) {
+    if ("ref" in localStorage && localStorage["ref"]) {
         var refs = localStorage["ref"].split(",");
         for (var i=0, s, reference; i < refs.length; ++i) {
             s = refs[i];
