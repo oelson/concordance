@@ -93,9 +93,8 @@ var activeReferenceLink = null;
  * Amorce des écouteurs d'évènement.
  */
 
-function init()
+function findElementsByIds()
 {
-    // Accès à divers éléments du DOM
     bookListOl = document.getElementById("book_list");
     filterForm = document.forms["filtre"];
     resultTable = document.getElementById("resultats_recherche");
@@ -117,6 +116,12 @@ function init()
     readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
     readSection = document.getElementById("context");
+}
+
+function init()
+{
+    // Trouve divers éléments du DOM
+    findElementsByIds();
     // Formulaire de recherche
     filterForm.addEventListener("submit", function(e) {
         e.preventDefault();
