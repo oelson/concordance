@@ -52,7 +52,7 @@ var bookListOl,
     horizontalResizeBar,
     readTab,
     dictTab,
-    readSection;
+    contextSection;
 
 var selectedReferences  = {};
 
@@ -115,7 +115,7 @@ function findElementsByIds()
     contextTab = document.getElementById("tab-context");
     readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
-    readSection = document.getElementById("context");
+    contextSection = document.getElementById("context");
 }
 
 function init()
@@ -339,7 +339,7 @@ function addBookToContextList(bookName)
 {
     var h1 = document.createElement("h1");
     h1.appendChild(document.createTextNode(bookName));
-    readSection.appendChild(h1);
+    contextSection.appendChild(h1);
 }
 
 /*
@@ -350,7 +350,7 @@ function addChapterToContextList(chapter)
 {
     var h2 = document.createElement("h2");
     h2.appendChild(document.createTextNode(chapter));
-    readSection.appendChild(h2);
+    contextSection.appendChild(h2);
 }
 
 /*
@@ -378,7 +378,7 @@ function addVerseToContextList(book, chapter, verse, text)
     }
     q.appendChild(span);
     q.appendChild(textNode);
-    readSection.appendChild(q);
+    contextSection.appendChild(q);
 }
 
 /*
@@ -388,8 +388,8 @@ function addVerseToContextList(book, chapter, verse, text)
 function cleanContextList()
 {
     contextVerseList = {};
-    while (readSection.childElementCount > 0) {
-        readSection.removeChild(readSection.firstElementChild);
+    while (contextSection.childElementCount > 0) {
+        contextSection.removeChild(contextSection.firstElementChild);
     }
 }
 
