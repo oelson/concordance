@@ -141,7 +141,7 @@ function init()
     var list = bookListOl.children, n=0;
     for (var i=0, li; i < list.length; ++i) {
         li = list[i];
-        li.addEventListener("click", function(e) {
+        li.addEventListener("mousedown", function(e) {
             selectBookItem(this);
         }, false);
     }
