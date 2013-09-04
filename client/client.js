@@ -406,6 +406,8 @@ function reinitForm()
     cleanReferenceList();
     filterForm.reset();
     localStorage.clear();
+    toggleCleanButton();
+    toggleLaunchButton();
 }
 
 /*
@@ -994,6 +996,9 @@ function handleSearchResponse(res)
     for (var i=0, ref; i < res.length; ++i) {
         ref = res[i];
         addVerseToSearchList(ref["ref"], ref["verse"]);
+    }
+    if (!rightBar.style.width) {
+        rightBar.style.width = "44%";
     }
     toggleCleanButton();
 }
