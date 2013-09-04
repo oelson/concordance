@@ -149,6 +149,7 @@ function init()
         li = list[i];
         li.addEventListener("mousedown", function(e) {
             selectBookItem(this);
+            e.preventDefault();
         }, false);
     }
     // Ferme la boîte à suggestions
