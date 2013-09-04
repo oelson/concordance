@@ -53,6 +53,6 @@ class InvalidVerseIndex(InvalidChapterIndex):
     def __str__(self):
         return 'invalid verse index "{}" in chapter "{}" from book "{}"'.format(
             self.verse_index,
-            self.book_name,
-            self.chapter_index
+            self.chapter_index,
+            self.book_name
         )

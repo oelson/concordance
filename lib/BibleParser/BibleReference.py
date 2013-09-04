@@ -241,11 +241,14 @@ class BibleXMLReference(BibleReference):
         Est un itérateur.
         """
         if chapter_element is None:
-            # Assume that the chapter to find is given by "chapter_index"
-            chapter_element = self.xml_bible_parser.get_chapter_element(
-                self._get_xml_book_element(),
-                chapter_index
-            )
+            # Assume que le chapitre à trouver est donné par "chapter_index"
+            if self.chapter_low == chapter_index:
+                chapter_element = self._get_xml_chapter_element()
+            else:
+                chapter_element = self.xml_bible_parser.get_chapter_element(
+                    self._get_xml_book_element(),
+                    chapter_index
+                )
         # Sélectionne à gauche
         new_verse_low = verse_index - left_lookahead
         if new_verse_low < 1:
@@ -253,7 +256,7 @@ class BibleXMLReference(BibleReference):
             try:
                 prev_chapter_element = self.xml_bible_parser.get_chapter_element(
                     self._get_xml_book_element(),
-                    chapter_index
+                    chapter_index-1
                 )
             except InvalidChapterIndex:
                 # l'itérateur s'arrête en cas de chapitre inexistant
