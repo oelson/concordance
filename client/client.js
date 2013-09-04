@@ -418,12 +418,16 @@ function reinitForm()
 function isFormSubmitable()
 {
     // Refuse la soumission si aucun mot-clé n'est donné
-    if (!(filterForm.elements["conjonction"].value) &&
-        !(filterForm.elements["quelconque"].value)  &&
-        !(filterForm.elements["aucun"].value)       &&
-        !(filterForm.elements["nombres_min"].value) &&
-        !(filterForm.elements["nombres_max"].value))
-    {
+    var requiredInputs = filterForm.getElementsByClassName("required");
+    var isFormFilled = false;
+    for (var i=0, inp; i < requiredInputs.length; ++i) {
+        inp = requiredInputs[i];
+        if (inp.value) {
+            isFormFilled = true;
+            break;
+        }
+    }
+    if (!isFormFilled) {
         return false;
     }
     if (!s || s.readyState != WebSocket.OPEN) {

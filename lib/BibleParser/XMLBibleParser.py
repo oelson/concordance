@@ -38,6 +38,7 @@ class XMLBibleParser:
     _one_of_keywords    = []
     _none_of_keywords   = []
     _number_ranges      = []
+    _exact_expressions  = []
     
     references = {}
     
@@ -184,9 +185,11 @@ class XMLBibleParser:
     
     def add_exact_expression(self, expr):
         """
-        TODO Ajoute une expression exacte à rechercher.
+        Ajoute une expression exacte à rechercher.
         """
-        pass
+        # Les expressions exactes sont recherchées de la même manière que les
+        # mots dont un seul est nécessaire
+        self._one_of_keywords.append(self._compile_keyword_regex(expr))
     
     def add_number_in_range(self, ran):
         """
