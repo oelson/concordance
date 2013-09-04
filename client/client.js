@@ -817,6 +817,7 @@ function requestServerForSearch()
     var allWords   = filterForm.elements["conjonction"].value;
     var oneOfWords = filterForm.elements["quelconque"].value;
     var noneWords  = filterForm.elements["aucun"].value;
+    var exactExpr  = filterForm.elements["expression"].value;
     var numLow     = filterForm.elements["nombres_min"].value;
     var numHigh    = filterForm.elements["nombres_max"].value;
     if (allWords.length) {
@@ -827,6 +828,12 @@ function requestServerForSearch()
     }
     if (noneWords.length) {
         dict["non"] = noneWords.split(/\s+/).filter(ret);
+    }
+    if (exactExpr) {
+        exactExpr = exactExpr.replace(/\s+/g, " ").replace(/^ /, "").replace(/ $/, "");
+        if (exactExpr) {
+            dict["exp"] = exactExpr;
+        }
     }
     if (numLow && numHigh) {
         dict["ran"] = [numLow, numHigh];

@@ -122,6 +122,9 @@ def handleSearchRequest(parser, data):
     # évite tous les mots suivants
     if "non" in data:
         parser.add_none_of_keywords(data["non"])
+    # expression exacte
+    if "exp" in data:
+        parser.add_exact_expression(data["exp"])
     # recherche un nombre compris dans un intervalle
     if "ran" in data:
         parser.add_number_in_range(data["ran"])

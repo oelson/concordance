@@ -182,6 +182,12 @@ class XMLBibleParser:
             self._compile_keyword_regex(x) for x in words
         ])
     
+    def add_exact_expression(self, expr):
+        """
+        TODO Ajoute une expression exacte à rechercher.
+        """
+        pass
+    
     def add_number_in_range(self, ran):
         """
         Ajoute à la liste un intervalle de nombres à détecter.
