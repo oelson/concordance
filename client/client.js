@@ -156,12 +156,10 @@ function init()
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // Réinitialisation du formulaire
     reinitButton.addEventListener("click", function(e) {
-        e.preventDefault();
         reinitForm();
     }, false);
     // Nettoyage des résultats de la recherche
     cleanButton.addEventListener("click", function(e) {
-        e.preventDefault();
         cleanSearchList();
         cleanContextList();
     }, false);
