@@ -217,16 +217,12 @@ class BibleXMLReference(BibleReference):
             )
         return self.verse_xml_element
 
-    def _get_chapter_size(self, chapter_element=None):
+    def _get_chapter_size(self):
         """
-        Retourne la taille du chapitre passé en argument (noeud DOM).
+        Retourne la taille du chapitre _courant_.
         """
-        if chapter_element is None:
-            # utilise le chapitre courant en cas d'omission
-            chapter_element = self._get_xml_chapter_element()
-        return self.xml_bible_parser.get_greatest_element_index(
-            chapter_element,
-            "v"
+        return self.xml_bible_parser.get_chapter_size(
+            self._get_xml_chapter_element()
         )
 
     def _get_overflowing_references(self,

@@ -99,6 +99,15 @@ class XMLBibleParser:
             return greatest
         return int(greatest.attrib["n"])
 
+    def get_chapter_size(self, chapter_element):
+        """
+        Retourne la taille du chapitre passé en argument (noeud DOM).
+        """
+        return self.get_greatest_element_index(
+            chapter_element,
+            "v"
+        )
+    
     def _verse_match_rules(self, verse):
         """
         Cherche à reconnaitre au moins un mot-clé dans le verset donné en
