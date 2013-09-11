@@ -124,20 +124,20 @@ class BibleReference:
         Reconstruit la référence à partir de ses composantes.
         """
         s = self.book
-        if self.chapter_low == -1:
+        if self.chapter_low is None:
             # Le livre a été donné seul
             return s
-        if self.chapter_high == -1 or self.chapter_low == self.chapter_high:
+        if self.chapter_high is None or self.chapter_low == self.chapter_high:
             # Le livre a été donné avec un chapitre
             s += " " + str(self.chapter_low)
         else:
             # Le livre a été donné avec un intervalle de chapitres
             s += " " + str(self.chapter_low) + "-" + str(self.chapter_high)
-        if self.verse_low == -1:
+        if self.verse_low is None:
             # Aucun indicateur de verset n'a été donné
             return s
         s += "." + str(self.verse_low)
-        if self.verse_high != -1 and self.verse_low != self.verse_high:
+        if self.verse_high is not None and self.verse_low != self.verse_high:
             # un intervalle de versets a été donné
             s += "-" + str(self.verse_high)
         return s
@@ -158,6 +158,9 @@ class BibleXMLReference(BibleReference):
     book_xml_element    = None
     chapter_xml_element = None
     verse_xml_element   = None
+    
+    _book_size    = None
+    _chapter_size = None
     
     def __init__(self,
                  parser,
@@ -221,9 +224,21 @@ class BibleXMLReference(BibleReference):
         """
         Retourne la taille du chapitre _courant_.
         """
-        return self.xml_bible_parser.get_chapter_size(
-            self._get_xml_chapter_element()
-        )
+        if self._chapter_size is None:
+            self._chapter_size = self.xml_bible_parser.get_chapter_size(
+                self._get_xml_chapter_element()
+            )
+        return self._chapter_size
+
+    def _get_book_size(self):
+        """
+        Retourne la taille du livre _courant_ (en nombre de chapitres).
+        """
+        if self._book_size is None:
+            self._book_size = self.xml_bible_parser.get_book_size(
+                self._get_xml_book_element()
+            )
+        return self._book_size
 
     def _get_overflowing_references(self,
                                     verse_index,
@@ -278,17 +293,18 @@ class BibleXMLReference(BibleReference):
         chapter_size = self._get_chapter_size()
         if new_verse_high > chapter_size:
             # il est nécessaire de rechercher dans le chapitre suivant
-            # itère récursivement "à droite"
-            for r in self._get_overflowing_references(
-                    # l'ancre devient le premier verset du chapitre suivant
-                    1,
-                    chapter_index + 1,
-                    0,
-                    new_verse_high - chapter_size - 1
-                    ):
-                # les références issues d'un débordement à droite seront levées
-                # plus tard
-                to_yield.append(r)
+            if chapter_index < self._get_book_size():
+                # itère récursivement "à droite"
+                for r in self._get_overflowing_references(
+                        # l'ancre devient le premier verset du chapitre suivant
+                        1,
+                        chapter_index + 1,
+                        0,
+                        new_verse_high - chapter_size - 1
+                        ):
+                    # les références issues d'un débordement à droite seront levées
+                    # plus tard
+                    to_yield.append(r)
             # le verset le plus à droite qui nous intéresse est borné au dernier
             # verset du chapitre _courant_
             new_verse_high = chapter_size

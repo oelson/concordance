@@ -99,6 +99,15 @@ class XMLBibleParser:
             return greatest
         return int(greatest.attrib["n"])
 
+    def get_book_size(self, book_element):
+        """
+        Retourne la taille du livre passé en argument (noeud DOM).
+        """
+        return self.get_greatest_element_index(
+            book_element,
+            "c"
+        )
+    
     def get_chapter_size(self, chapter_element):
         """
         Retourne la taille du chapitre passé en argument (noeud DOM).
@@ -256,8 +265,8 @@ class XMLBibleParser:
         la recherche par mots-clés.
         Si oui, alors les correpondances sont éventuellement mises en
         surbrillance.
-        Retourne un quadruplet contenant le nom du livre, les indices du
-        chapitre et du verset, et son texte.
+        Retourne une paire consistant en un objet de type "BibleXMLReference"
+        et son texte.
         """
         if verse_element.text is None:
             return
@@ -267,9 +276,15 @@ class XMLBibleParser:
         text = verse_element.text if self._highlight_prefix is None else \
                self._prefix_matches(verse_element.text)
         return (
-            book_element.attrib["n"],
-            int(chapter_element.attrib["n"]),
-            int(verse_element.attrib["n"]),
+            BibleXMLReference(
+                self,
+                None,
+                book_element.attrib["n"],
+                int(chapter_element.attrib["n"]),
+                None,
+                int(verse_element.attrib["n"]),
+                None
+            ),
             text
         )
 
@@ -359,7 +374,7 @@ class XMLBibleParser:
     def __iter__(self):
         """
         Recherche dans la bible à partir de références et les retournes une 
-        à une sous la forme de chaînes préfixées par leur référence.
+        à une sous la forme d'objets de type "BibleXMLReference".
         """
         # Parcours toute la bible en cas d'absence de référence
         if not self.references:
