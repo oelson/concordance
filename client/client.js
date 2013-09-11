@@ -844,8 +844,12 @@ function requestServerForSearch()
             dict["exp"] = exactExpr;
         }
     }
-    if (numLow && numHigh) {
-        dict["ran"] = [numLow, numHigh];
+    if (numLow) {
+        var ranDict = {"l": numLow};
+        if (numHigh) {
+            ranDict["h"] = numHigh;
+        }
+        dict["ran"] = ranDict;
     }
     for (var r in selectedReferences) {
         dict["ref"].push(r);

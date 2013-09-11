@@ -127,7 +127,16 @@ def handleSearchRequest(parser, data):
         parser.add_exact_expression(data["exp"])
     # recherche un nombre compris dans un intervalle
     if "ran" in data:
-        parser.add_number_in_range(data["ran"])
+        if "l" in data["ran"]:
+            if "h" in data["ran"]:
+                parser.add_number_in_range(
+                    int(data["ran"]["l"]),
+                    int(data["ran"]["h"])
+                )
+            else:
+                parser.add_number_in_range(
+                    int(data["ran"]["l"])
+                )
     # préfixe les résultats par des tirets
     parser.enable_highlighting("_")
     # itère sur les références de verset correspondants

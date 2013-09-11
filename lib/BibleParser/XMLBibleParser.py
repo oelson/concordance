@@ -2,16 +2,13 @@
 
 __all__ = ["XMLBibleParser"]
 
-"""
-TODO ne pas déborder au delà d'un chapitre dans le contexte pour les Psaumes
-"""
-
 import re
 
 from xml.etree.ElementTree import ElementTree, Element
 
 from BibleParser.BibleReference import BibleXMLReference
 from BibleParser.Errors import *
+from BibleParser.Numbers import Number
 
 class XMLBibleParser:
     """
@@ -177,6 +174,22 @@ class XMLBibleParser:
         else:
             return re.compile(s, re.I)
     
+    def _compile_range_regex(self, low, high):
+        """
+        Compile une expression régulière capable de détecter tout nombre compris
+        dans un intervalle, sois dans sa représentation numérique, sois dans sa
+        représentation textuelle.
+        """
+        if high == -1:
+            ran = (low,)
+        else:
+            ran = range(low, high+1)
+        values = []
+        for n in ran:
+            values.append(str(n))
+            values.append(str(Number(n)))
+        return re.compile(r"\b("+("|".join(values))+r")\b")
+    
     def add_mandatory_keywords(self, words):
         """
         Ajoute à la liste des mots-clés tous obligatoires.
@@ -209,14 +222,17 @@ class XMLBibleParser:
         # mots dont un seul est nécessaire
         self._one_of_keywords.append(self._compile_keyword_regex(expr))
     
-    def add_number_in_range(self, ran):
+    def add_number_in_range(self, low, high=-1):
         """
         Ajoute à la liste un intervalle de nombres à détecter.
         """
-        l, h = int(ran["low"]), int(ran["high"])
-        if h > l:
+        if not isinstance(low, int) or not isinstance(high, int):
+            raise ValueError("expect integers")
+        if high != -1 and high > low:
             raise ValueError("the range is not valid")
-        self._number_ranges.append((l,h))
+        # Les nombres sont recherchées de la même manière que les mots dont un
+        # seul est nécessaire
+        self._one_of_keywords.append(self._compile_range_regex(low, high))
     
     def set_case_sensitivity(self, sensitive):
         """
