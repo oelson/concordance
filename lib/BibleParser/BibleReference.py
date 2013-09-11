@@ -127,7 +127,7 @@ class BibleReference:
         if self.chapter_low == -1:
             # Le livre a été donné seul
             return s
-        if self.chapter_high == -1:
+        if self.chapter_high == -1 or self.chapter_low == self.chapter_high:
             # Le livre a été donné avec un chapitre
             s += " " + str(self.chapter_low)
         else:
@@ -137,7 +137,7 @@ class BibleReference:
             # Aucun indicateur de verset n'a été donné
             return s
         s += "." + str(self.verse_low)
-        if self.verse_high != -1:
+        if self.verse_high != -1 and self.verse_low != self.verse_high:
             # un intervalle de versets a été donné
             s += "-" + str(self.verse_high)
         return s
