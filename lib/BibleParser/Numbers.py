@@ -84,7 +84,7 @@ class Number:
         if c > 0:
             if c > 1:
                 # commence par le chiffre écrit textuellement
-                s += self._dizains[c] + "-"
+                s += self._dizains[c] + " "
             # accole le suffixe "cent"
             s += self._units[2]
         ## Dizaines
@@ -134,7 +134,12 @@ class Number:
                 if unit > 2:
                     if partial_repr: partial_repr += " "
                     partial_repr += self._units[unit]
-                s = partial_repr + " " + s
+                # ajoute le nouveau morceau au début, en évitant d'insérer un
+                # espace inutile à la fin
+                new_s = partial_repr
+                if s:
+                    new_s += " " + s
+                s = new_s
         return s
 
     def __repr__(self):
