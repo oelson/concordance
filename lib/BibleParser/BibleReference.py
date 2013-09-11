@@ -238,40 +238,34 @@ class BibleXMLReference(BibleReference):
         """
         if chapter_element is None:
             # Assume que le chapitre à trouver est donné par "chapter_index"
-            if self.chapter_low == chapter_index:
-                chapter_element = self._get_xml_chapter_element()
-            else:
-                chapter_element = self.xml_bible_parser.get_chapter_element(
-                    self._get_xml_book_element(),
-                    chapter_index
-                )
+            chapter_element = self.xml_bible_parser.get_chapter_element(
+                self._get_xml_book_element(),
+                chapter_index
+            )
         # Sélectionne à gauche
         new_verse_low = verse_index - left_lookahead
         if new_verse_low < 1:
             # il est nécessaire de rechercher dans le chapitre précédent
-            try:
+            if chapter_index > 1:
                 prev_chapter_element = self.xml_bible_parser.get_chapter_element(
                     self._get_xml_book_element(),
-                    chapter_index-1
+                    chapter_index - 1
                 )
-            except InvalidChapterIndex:
-                # l'itérateur s'arrête en cas de chapitre inexistant
-                # ici, le premier chapitre du livre a été atteint
-                pass
-            else:
-                prev_chapt_size = self._get_chapter_size(prev_chapter_element)
+                prev_chapt_size = self.xml_bible_parser.get_chapter_size(prev_chapter_element)
                 # itère récursivement "à gauche" en intanciant une nouvelle
                 # référence
                 for r in self._get_overflowing_references(
                         # l'ancre devient le dernier verset du chapitre
                         # précédent
                         prev_chapt_size,
-                        chapter_index-1,
+                        chapter_index - 1,
+                        # le débordement à gauche devient le produit de la
+                        # précédente soustraction
                         -new_verse_low,
                         0,
                         # donne directement le noeud précédent pour éviter un
                         # parcours supplémentaire du DOM
-                        chapter_element=prev_chapter_element
+                        prev_chapter_element
                         ):
                     yield r
             # le verset le plus à gauche qui nous intéresse est borné au premier
@@ -288,11 +282,12 @@ class BibleXMLReference(BibleReference):
             for r in self._get_overflowing_references(
                     # l'ancre devient le premier verset du chapitre suivant
                     1,
-                    chapter_index+1,
+                    chapter_index + 1,
                     0,
                     new_verse_high - chapter_size - 1
                     ):
-                # Do not field those references now
+                # les références issues d'un débordement à droite seront levées
+                # plus tard
                 to_yield.append(r)
             # le verset le plus à droite qui nous intéresse est borné au dernier
             # verset du chapitre _courant_
@@ -308,7 +303,7 @@ class BibleXMLReference(BibleReference):
             new_verse_low,
             new_verse_high
         )
-        # Yield references from the right overflow after the _current_ reference
+        # Renvoie ler références à droite _après_ la référence _courante_
         for r in to_yield:
             yield r
 
@@ -321,11 +316,14 @@ class BibleXMLReference(BibleReference):
         """
         if left_lookahead < 1 or right_lookahead < 1:
             raise ValueError("need lookahead quantities greater than 1")
-        return [r for r in self._get_overflowing_references(
+        collection = []
+        for r in self._get_overflowing_references(
                 self.verse_low,
                 self.chapter_low,
                 left_lookahead,
                 right_lookahead
-        )]
+                ):
+            collection.append(r)
+        return collection
    
     
