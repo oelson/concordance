@@ -714,6 +714,7 @@ function saveFormState()
     localStorage["all"] = filterForm.elements["conjonction"].value;
     localStorage["one"] = filterForm.elements["quelconque"].value;
     localStorage["non"] = filterForm.elements["aucun"].value;
+    localStorage["exp"] = filterForm.elements["expression"].value;
     localStorage["cas"] = filterForm.elements["case"].checked;
     localStorage["acc"] = filterForm.elements["accent"].checked;
     localStorage["bou"] = filterForm.elements["mot"].checked;
@@ -740,6 +741,9 @@ function restoreFormState()
     }
     if ("non" in localStorage) {
         filterForm.elements["aucun"].value = localStorage["non"];
+    }
+    if ("exp" in localStorage) {
+        filterForm.elements["expression"].value = localStorage["exp"];
     }
     if ("cas" in localStorage) {
         filterForm.elements["case"].checked = (localStorage["cas"] == "true");
