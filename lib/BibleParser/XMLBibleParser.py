@@ -44,6 +44,10 @@ class XMLBibleParser:
     _word_boundary      = True
     _highlight_prefix   = None
 
+    _regexp_avoid_number_overlapping_before = None
+    _regexp_avoid_number_overlapping_after  = None
+    _regex_match_space_dash = None
+
     def __init__(self, xml):
         """
         Le 1er argument doit-être:
@@ -57,6 +61,21 @@ class XMLBibleParser:
             self.bible = tree.parse(xml)
         else:
             raise ValueError("'xml' argument is not an 'ElementTree' instance nor a path to a XML file")
+        # compile deux expressions régulières permettant d'éviter de capturer un
+        # nombre faisant partie d'un plus grand nombre
+        rb = ""
+        ra = ""
+        for s in Number.all_digits:
+            rb += "(?<!" + s + "[ -])"
+            ra += "(?![ -]" + s + ")"
+        self._regexp_avoid_number_overlapping_before = rb
+        self._regexp_avoid_number_overlapping_after  = ra
+        # compile une expression régulière permettant de détecter et de
+        # supprimer une indication de numérotation secondaire en début de verset
+        self._regex_match_alter_verse = re.compile("\(\d+[.:-]\d+\) ?")
+        # compile une expression régulière permettant de détecter un espace ou
+        # un tiret
+        self._regex_match_space_dash = re.compile("[ -]")
 
     def add_reference(self, reference):
         """
@@ -187,8 +206,18 @@ class XMLBibleParser:
         values = []
         for n in ran:
             values.append(str(n))
-            values.append(str(Number(n)))
-        return re.compile(r"\b("+("|".join(values))+r")\b")
+            litteral_number = str(Number(n))
+            # ne fait pas de différence entre les tirets et les espaces
+            litteral_number = self._regex_match_space_dash.sub("[ -]", litteral_number)
+            values.append(litteral_number)
+        # évite le recoupemement par l'arrière
+        numbers = self._regexp_avoid_number_overlapping_before
+        # un OU entre chaque chiffre ou nombre textuel contenu dans l'intervalle
+        # et délimité par un séparateur de mot
+        numbers += r"\b("+("|".join(values))+r")\b"
+        # évite le recoupemement par l'avant
+        numbers += self._regexp_avoid_number_overlapping_after
+        return re.compile(numbers)
     
     def add_mandatory_keywords(self, words):
         """
@@ -228,8 +257,9 @@ class XMLBibleParser:
         """
         if not isinstance(low, int) or not isinstance(high, int):
             raise ValueError("expect integers")
-        if high != -1 and high > low:
-            raise ValueError("the range is not valid")
+        if high != -1:
+            if high <= low:
+                raise ValueError("the range is not valid")
         # Les nombres sont recherchées de la même manière que les mots dont un
         # seul est nécessaire
         self._one_of_keywords.append(self._compile_range_regex(low, high))

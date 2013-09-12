@@ -154,6 +154,9 @@ function init()
     }
     // Ferme la boîte à suggestions
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
+    // Gestion de l'intervalle de nombres
+    filterForm.elements["nombres_min"].addEventListener("change", handleMinMaxValuesChange, false);
+    filterForm.elements["nombres_max"].addEventListener("change", handleMinMaxValuesChange, false);
     // Réinitialisation du formulaire
     reinitButton.addEventListener("click", function(e) {
         reinitForm();
@@ -702,6 +705,29 @@ function hideBookSuggestion()
 function signalReferenceError()
 {
     referenceErrorSpan.classList.add("error");
+}
+
+/*
+ * Vérifie l'intégrité de l'intervalle des nombres.
+ */
+
+function handleMinMaxValuesChange(e)
+{
+    var isMinInput = this == filterForm.elements["nombres_min"];
+    var min = parseInt(filterForm.elements["nombres_min"].value);
+    var max = parseInt(filterForm.elements["nombres_max"].value);
+    // la valeur minimale a changé
+    if (isMinInput) {
+        if (min == max) {
+            filterForm.elements["nombres_max"].value = min+1;
+        }
+    }
+    // la valeur maximale a changé
+    else {
+        if (min == max) {
+            filterForm.elements["nombres_min"].value = max-1;
+        }
+    }
 }
 
 /**

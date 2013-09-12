@@ -52,6 +52,9 @@ class Number:
         "quatre-vingt-dix"
     ]
     
+    # l'ensemble du texte des chiffres 
+    all_digits = _units[1:] + _dizains[:-3] + _dizains_units[2:7]
+    
     number = None
     representation = None
     
