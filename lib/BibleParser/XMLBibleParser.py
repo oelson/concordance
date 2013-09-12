@@ -316,11 +316,15 @@ class XMLBibleParser:
         """
         if verse_element.text is None:
             return
+        text = verse_element.text
+        # enlève les indications potentielles de numérotation altérée de verset
+        text = self._regex_match_alter_verse.sub("", text)
         # barrière de concordance avec les mots-clés
-        if not self._verse_match_rules(verse_element.text):
+        if not self._verse_match_rules(text):
             return
-        text = verse_element.text if self._highlight_prefix is None else \
-               self._prefix_matches(verse_element.text)
+        # mise en surbrillance
+        if self._highlight_prefix is not None:
+            text = self._prefix_matches(text)
         return (
             BibleXMLReference(
                 self,
