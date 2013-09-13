@@ -185,6 +185,11 @@ span.delete
     height: 16px;
 }
 
+span.valid
+{
+    background-image: url("res/img/valid-button.png");
+}
+
 span.delete
 {
     opacity: .66;
