@@ -724,7 +724,7 @@ function handleMinMaxValuesChange(e)
     }
     // la valeur maximale a changé
     else {
-        if (min == max) {
+        if ((isNaN(min) && !isNaN(max)) || (min == max)) {
             filterForm.elements["nombres_min"].value = max-1;
         }
     }
