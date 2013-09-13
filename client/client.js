@@ -1034,9 +1034,6 @@ function handleSearchResponse(res)
         ref = res[i];
         addVerseToSearchList(ref["ref"], ref["verse"]);
     }
-    if (!rightBar.style.width) {
-        rightBar.style.width = "44%";
-    }
     toggleCleanButton();
 }
 
