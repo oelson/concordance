@@ -106,6 +106,8 @@ class XMLBibleParser:
         Ajoute une référence simple en l'élargissant afin d'en faire ressortir
         le contexte.
         """
+        # TODO ne pas déborder au delà d'un chapitre dans le contexte pour les Psaumes
+        # TODO il faut permettre un choix entre plusieurs types de débordement (coupe exacte, au dernier point, au chapitre, au livre)
         bible_reference = BibleXMLReference(self, reference)
         for new_bible_reference in bible_reference.get_overflowing_references(
                 left_lookahead,
@@ -150,6 +152,7 @@ class XMLBibleParser:
         Cherche à reconnaitre au moins un mot-clé dans le verset donné en
         argument.
         L'argument est une chaîne.
+        TODO if faut fusionner "_verse_match_rules" et "_prefix_matches" pour améliorer les perfs.
         """
         # mots étants _tous_ obligatoires
         for r in self._mandatory_keywords:

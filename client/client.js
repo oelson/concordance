@@ -22,6 +22,11 @@
  *  MA 02110-1301, USA.
  */
 
+/*
+ * TODO Faire apparaitre un spinner pour chaque requête, avec possibilité d'avorter une requète en cours + désactivation de l'interface
+ * TODO Coder un message "aucun résultat n'a été trouvé + affichage conséquent dans le panneau de droite
+ */
+
 /**
  * Configuration du client WebSocket
  */
@@ -154,6 +159,12 @@ function init()
     }
     // Ferme la boîte à suggestions
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
+    // Sélection de mots dans l'onglet de lecture contextuelle
+    /*
+    contextSection.addEventListener("selectstart", function(e) {
+        console.log(e); // TODO comment accéder au mot sélectionné ?
+    }, false);
+    */
     // Gestion de l'intervalle de nombres
     filterForm.elements["nombres_min"].addEventListener("change", handleMinMaxValuesChange, false);
     filterForm.elements["nombres_max"].addEventListener("change", handleMinMaxValuesChange, false);
