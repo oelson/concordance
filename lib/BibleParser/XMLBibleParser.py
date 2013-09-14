@@ -4,7 +4,7 @@ __all__ = ["XMLBibleParser"]
 
 import re
 
-from xml.etree.ElementTree import ElementTree, Element
+import xml.etree.ElementTree as ET
 
 from BibleParser.BibleReference import BibleXMLReference
 from BibleParser.Errors import *
@@ -61,7 +61,12 @@ class XMLBibleParser:
         # Crée une carte des liens parentaux entre tous les éléments du XML
         self._parent_map = dict((c, p) for p in self.bible.iter() for c in p)
 
+    def get_element_parent(self, element):
         """
+        Un ajout à l'interface ElementTree : permet de sélectionner le parent de
+        tout nœud.
+        """
+        return self._parent_map[element]
 
     def _build_regular_expressions(self):
         """
@@ -374,8 +379,7 @@ class XMLBibleParser:
         verse_element = chapter_element.find('./v[@n="{}"]'.format(verse_index))
         if verse_element is None:
             raise InvalidVerseIndex(
-                "UNK_BOOK", # TODO element.getparent() ?
-                # book.attrib["n"],
+                self.get_element_parent(chapter_element).attrib["n"],
                 chapter_element.attrib["n"],
                 verse_index
             )
