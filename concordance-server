@@ -36,9 +36,11 @@ context_size = 5
 
 def init(self):
     """
-    Ajoute au thread un dictionnaire qui contiendra les différents parseurs
+    Ajoute au thread un dictionnaire qui contiendra les différents parseurs.
+    Si le client associé au thread demande N traductions différentes, le thread
+    instanciera N parseurs différents.
     """
-    self.bibles = {}
+    self.bible_parsers = {}
 
 def handle(self, data):
     """
@@ -53,16 +55,17 @@ def handle(self, data):
     if "tra" not in data or data["tra"] not in bible_translations:
         self.error("no or bad translation given")
         return
-    # instancie un parser si nécessaire
-    if data["tra"] not in self.bibles:
-        self.info("new bible '{}'".format(data["tra"]))
-        self.bibles[data["tra"]] = XMLBibleParser(
-            os.path.join(
-                bible_xml_directory,
-                data["tra"]+".xml"
-            )
+    # instancie un parseur si nécessaire
+    if translation not in self.bible_parsers:
+        bible_xml_content = get_bible_xml(translation)
+        self.info("new parser for the translation '{}'".format(translation))
+        self.bible_parsers[translation] = XMLBibleParser(
+            # passe par une fonction de service pour ne pas recharger à chaque
+            # fois les mêmes fichiers (les fichiers XML contenant les bibles
+            # sont très lourds)
+            bible_xml_content
         )
-    parser = self.bibles[data["tra"]]
+    parser = self.bible_parsers[translation]
     parser.clean()
     # le token permet de sélectionner le service approprié
     if data["tok"] == "search":
@@ -163,11 +166,37 @@ if not bible_xml_directory:
     print("env variable 'BIBLE_XML_DIRECTORY' must be set", file=sys.stderr)
     sys.exit(1)
 
-# Liste les fichiers XML
+# Liste les traductions de la bible existantes à partir du disque
 os.chdir(bible_xml_directory)
 for files in os.listdir("."):
     if files.endswith(".xml"):
         bible_translations.append(files[:-4])
+
+# Fichiers XML
+bible_xml_files = {}
+
+def get_bible_xml(translation):
+    """
+    Fonction de service permettant d'obtenir le contenu (code XML) d'une
+    traduction de la bible.
+    Chaque fichier XML ne sera lu qu'une seule fois au cours de l'exécution du
+    script.
+    """
+    if translation not in bible_translations:
+        # Vérifie que la traduction existe
+        raise ValueError("translation '{}' is unavailable".format(translation))
+    if translation not in bible_xml_files:
+        # Ouvre le fichier en lecture
+        xml_path = "{}/{}.xml".format(
+            bible_xml_directory,
+            translation
+        )
+        with open(xml_path, 'r') as xml_file:
+            # Le contenu du fichier XML ne sera lu qu'une seule fois au cours
+            # de l'exécution du script
+            bible_xml_files[translation] = xml_file.read()
+        server.info("new translation read '{}'".format(translation))
+    return bible_xml_files[translation]
 
 """
 Instancie le serveur websocket de la concordance

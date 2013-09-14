@@ -48,19 +48,26 @@ class XMLBibleParser:
     _regexp_avoid_number_overlapping_after  = None
     _regex_match_space_dash = None
 
-    def __init__(self, xml):
+    def __init__(self, xml_content):
         """
-        Le 1er argument doit-être:
-            ° soit une instance de "Element" (un noeud racine de la bible)
-            ° soit un chemin vers un fichier XML de la bible
+        Parse le contenu du fichier XML contenant la bible et sauve la racine
+        sous l'attribut "bible".
         """
-        if isinstance(xml, Element):
-            self.bible = xml
-        elif isinstance(xml, str):
-            tree = ElementTree()
-            self.bible = tree.parse(xml)
-        else:
-            raise ValueError("'xml' argument is not an 'ElementTree' instance nor a path to a XML file")
+        if not isinstance(xml_content, str):
+            raise ValueError("expected the content of an XML file")
+        self.bible = ET.fromstring(xml_content)
+        # Compile diverses expressions régulières
+        self._build_regular_expressions()
+        # Crée une carte des liens parentaux entre tous les éléments du XML
+        self._parent_map = dict((c, p) for p in self.bible.iter() for c in p)
+
+        """
+
+    def _build_regular_expressions(self):
+        """
+        Compile diverses expressions régulières utiles pour le traitement des
+        versets.
+        """
         # compile deux expressions régulières permettant d'éviter de capturer un
         # nombre faisant partie d'un plus grand nombre
         rb = ""
@@ -71,7 +78,7 @@ class XMLBibleParser:
         self._regexp_avoid_number_overlapping_before = rb
         self._regexp_avoid_number_overlapping_after  = ra
         # compile une expression régulière permettant de détecter et de
-        # supprimer une indication de numérotation secondaire en début de verset
+        # supprimer une indication de numérotation secondaire dans un verset
         self._regex_match_alter_verse = re.compile("\(\d+[.:-]\d+\) ?")
         # compile une expression régulière permettant de détecter un espace ou
         # un tiret
