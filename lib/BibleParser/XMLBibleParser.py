@@ -192,11 +192,13 @@ class XMLBibleParser:
         Compile une expression régulière détectant un mot délimité, avec ou sans
         sensibilité à la case.
         """
+        s = re.escape(s)
         # Permet de passer outre les accents
         if not self._accent_sensitivity:
             for accents in self._accent_mapping:
                 p = "["+accents+"]"
-                s = re.sub(p, p, s)
+                # la fonction re.escape ajoute des '\' avant les accents
+                s = re.sub("\\\?"+p, p, s)
         # Délimite le mot à chercher
         if self._word_boundary:
             s = r"\b"+s+r"\b"
