@@ -25,10 +25,10 @@ import os
 import signal
 import sys
 
+from BibleParser.Errors import InvalidReferenceError
 from BibleParser.XMLBibleParser import XMLBibleParser
 from time import time, sleep
 from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
-from xml.etree import ElementTree
 
 # Nombre de versets à sélectionner autours d'une référence lors d'un
 # élargissement
@@ -51,10 +51,12 @@ def handle(self, data):
     if "tok" not in data:
         self.error("no token given")
         return
+    token = data["tok"]
     # traduction de la bible à utiliser pour la recherche
-    if "tra" not in data or data["tra"] not in bible_translations:
-        self.error("no or bad translation given")
+    if "tra" not in data:
+        self.error("no translation name given")
         return
+    translation = data["tra"]
     # instancie un parseur si nécessaire
     if translation not in self.bible_parsers:
         bible_xml_content = get_bible_xml(translation)
@@ -67,21 +69,47 @@ def handle(self, data):
         )
     parser = self.bible_parsers[translation]
     parser.clean()
+    # prépare la future réponse sous la forme d'un dictionnaire
+    # celui-ci sera encodé sous la forme d'une chaîne JSON
+    resp = {
+        # le token doit toujours être renvoyé en l'état pour assurer la
+        # cohérence du service
+        "tok": token
+    }
     # le token permet de sélectionner le service approprié
-    if data["tok"] == "search":
-        resp = handleSearchRequest(parser, data)
-        resp = json.dumps(resp)
-        self.send(resp)
-    elif data["tok"] == "context":
-        resp = handleContextRequest(parser, data)
-        resp = json.dumps(resp)
-        self.send(resp)
+    if token == "search":
+        try:
+            handleSearchRequest(parser, data, resp)
+        # TODO envoyer au client un code d'erreur non-fatal
+        except InvalidReferenceError as e:
+            self.error(str(e))
+            pass
+        # une erreur fatale quelconque
+        except Exception as e:
+            self.error(str(e))
+            self.updateState(WebSocketCode.WebSocketClientState.STATE_INITIATE_CLOSURE)
+            self.initiateClosingHandShake(
+                status=WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
+                reason=str(e)
+            )
+            return
+    elif token == "context":
+        handleContextRequest(parser, data, resp)
     else:
-        self.error('unknown token "{}"'.format(data["tok"]))
+        self.error('unknown token "{}"'.format(token))
+        return
+    # adjoint un marqueur de temps
+    resp["now"] = int(round(time() * 1000))
+    # envoie le résultat au client sous la forme d'une chaîne JSON
+    JSON = json.dumps(resp)
+    self.send(JSON)
 
-def handleContextRequest(parser, data):
+def handleContextRequest(parser, data, resp):
     """
-    Traite une requête de contexte.
+    Traite une requête de contexte : parcours toutes les références voisines à
+    la référence donnée en paramètre (clée "ref").
+    Retourne un dictionnaire de la forme "livre > chapitre > verset" sous la
+    clée "res" du dictionnaire "data".
     """
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"], context_size, context_size)
@@ -93,16 +121,14 @@ def handleContextRequest(parser, data):
         if reference.chapter_low not in references[reference.book]:
             references[reference.book][reference.chapter_low] = {}
         references[reference.book][reference.chapter_low][reference.verse_low] = verse
-    response = {
-        "res": references,
-        "now": int(round(time() * 1000)),
-        "tok": data["tok"]
-    }
-    return response
+    resp["res"] = references
 
-def handleSearchRequest(parser, data):
+def handleSearchRequest(parser, data, resp):
     """
-    Traite une recherche par mots-clés.
+    Traite une recherche par mots-clés : parcours tous les versets concordants
+    aux différents paramètres donnés via le dictionnaire "data".
+    Retourne une liste de paires (référence, texte) sous la clée "res" du
+    dictionnaire "data".
     """
     # correspondance avec des mots-entiers
     if "bou" in data:
@@ -149,12 +175,7 @@ def handleSearchRequest(parser, data):
             "ref": str(reference),
             "verse": verse
         })
-    response = {
-        "res": verses,
-        "now": int(round(time() * 1000)),
-        "tok": data["tok"]
-    }
-    return response
+    resp["res"] = verses
 
 """
 Obtention de la liste des fichier XML disponnibles

@@ -11,8 +11,7 @@ __all__ = [
     "InvalidVerseIndex"
 ]
 
-
-class BibleParserError(ValueError):
+class BibleParserError(Exception):
     """
     Classe mère des erreurs.
     """
@@ -26,7 +25,13 @@ class BadReferenceFormat(BibleParserError):
     """
     pass
 
-class InvalidBookName(BibleParserError):
+class InvalidReferenceError(BibleParserError):
+    """
+    Classe mère des erreurs de référence (mis-à-part les erreurs de format).
+    """
+    pass
+
+class InvalidBookName(InvalidReferenceError):
     def __init__(self, book_name):
         self.book_name = book_name
 
