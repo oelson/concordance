@@ -69,9 +69,14 @@ a.decore-hover:hover
     display: none !important;
 }
 
-.null
+.no-width
 {
     width: 1px;
+}
+
+.no-height
+{
+    height: 1px;
 }
 
 .relative
@@ -353,8 +358,11 @@ td#bottom
     padding: 0;
     box-sizing: border-box;
     vertical-align: top;
-    height: 1px;
 }
+
+/**
+ * Lecture contextuelle
+ */
 
 section#context
 {
@@ -415,16 +423,26 @@ section#context mark
     background-color: #FFF8A2; 
 }
 
+/**
+ * Dictionnaire
+ */
+
+section#dictionnary > table
+{
+    border-spacing: 10px 2px;
+}
+
+section#dictionnary > table > tbody > tr > td:nth-of-type(1)
+{
+    font-weight: bold;
+    color: #6D6D6D;
+}
+
 /*
  * Onglets du panneau du bas
  */
 
-td#bottom-tabs
-{
-    height: 1px;
-}
-
-td#bottom-tabs > nav
+nav#bottom-tabs
 {
     display: block;
     padding: 0 5px 0 5px;
@@ -433,18 +451,19 @@ td#bottom-tabs > nav
     border-bottom: 1px solid rgba(0,0,0,.2);
 }
 
-td#bottom-tabs > nav > li
+nav#bottom-tabs > li
 {
     display: inline-block;
     list-style-type: none;
-    color: black;
+    color: #828282;
     text-shadow: 1px 1px 1px white;
     background-color: #E0E0E0;
     padding: 2px 6px 2px 6px;
     border-left:  3px solid transparent;
 }
 
-td#bottom-tabs > nav > li.selected
+nav#bottom-tabs > li.selected
 {
+    color: black;
     border-left-color: #4285F4;
 }

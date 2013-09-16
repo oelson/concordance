@@ -57,7 +57,14 @@ var bookListOl,
     horizontalResizeBar,
     readTab,
     dictTab,
-    contextSection;
+    contextSection,
+    termeCell,
+    natureCell,
+    prononciationCell,
+    domaineCell,
+    etymologieCell,
+    variantesCell,
+    citationsCell;
 
 var selectedReferences  = {};
 
@@ -121,6 +128,14 @@ function findElementsByIds()
     readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
     contextSection = document.getElementById("context");
+    // Dictionnaire
+    termeCell = document.getElementById("dictionnary-terme");
+    natureCell = document.getElementById("dictionnary-nature");
+    prononciationCell = document.getElementById("dictionnary-prononciation");
+    domaineCell = document.getElementById("dictionnary-domaine");
+    etymologieCell = document.getElementById("dictionnary-etymologie");
+    variantesCell = document.getElementById("dictionnary-variantes");
+    citationsCell = document.getElementById("dictionnary-citations");
 }
 
 function init()
@@ -160,11 +175,10 @@ function init()
     // Ferme la boîte à suggestions
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
     // Sélection de mots dans l'onglet de lecture contextuelle
-    /*
-    contextSection.addEventListener("selectstart", function(e) {
-        console.log(e); // TODO comment accéder au mot sélectionné ?
+    contextSection.addEventListener("select", function(e) {
+        var text = getSelection().toString();
+        handleSelectedText(text)
     }, false);
-    */
     // Gestion de l'intervalle de nombres
     filterForm.elements["nombres_min"].addEventListener("change", handleMinMaxValuesChange, false);
     filterForm.elements["nombres_max"].addEventListener("change", handleMinMaxValuesChange, false);
@@ -473,6 +487,45 @@ function toggleCleanButton()
 function toggleLaunchButton()
 {
     launchButton.disabled = !isFormSubmitable();
+}
+
+/*
+ * Gestion de l'affichage des définitions du dictionnaire.
+ */
+
+function hideDictionnaryUselessLines()
+{
+    if (!termeCell.firstChild) {
+        termeCell.parentNode.classList.add("gone");
+    }
+    if (!natureCell.firstChild) {
+        natureCell.parentNode.classList.add("gone");
+    }
+    if (!prononciationCell.firstChild) {
+        prononciationCell.parentNode.classList.add("gone");
+    }
+    if (!domaineCell.firstChild) {
+        domaineCell.parentNode.classList.add("gone");
+    }
+    if (!etymologieCell.firstChild) {
+        etymologieCell.parentNode.classList.add("gone");
+    }
+    if (!variantesCell.firstChild) {
+        variantesCell.parentNode.classList.add("gone");
+    }
+    if (!citationsCell.firstChild) {
+        citationsCell.parentNode.classList.add("gone");
+    }
+}
+
+/**
+ * Gestion du dictionnaire
+ */
+
+function handleSelectedText(text)
+{
+    // TODO
+    console.log(text);
 }
 
 /**
