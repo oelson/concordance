@@ -1,10 +1,10 @@
 /**
- * "Bible Index" Javascript webclient.
+ * Concordance biblique intégrant un outil de recherche et le dictionnaire
+ * "Le Littré".
  * 
- * Uses WebSockets in order to request verses from a server that handles various
- * bible's format.
+ * Fichier dédié à l'initialisation de tous les objets globaux de l'application.
  * 
- *  Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
+ * Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
  * 
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -95,7 +95,6 @@ var activeReferenceLink = null;
 
 /*
  * Récupère divers noeuds HTML dans des variables globales.
- * Amorce des écouteurs d'évènement.
  */
 
 function findElementsByIds()
@@ -130,6 +129,13 @@ function findElementsByIds()
     variantesCell = document.getElementById("dictionnary-variantes");
     citationsCell = document.getElementById("dictionnary-citations");
 }
+
+/*
+ * Connecte chacun des éléments dynamiques de la page à ses différents
+ * écouteurs.
+ * Restaure éventuellement l'ancien étant du formulaire, puis tente une
+ * connexion avec le serveur websocket.
+ */
 
 function init()
 {
@@ -211,37 +217,4 @@ function handleSelectedText(text)
 {
     // TODO
     console.log(text);
-}
-
-/**
- * Gestion des URI (gérées par le hash "#" dans l'URL)
- */
-
-/*
- * Extrait les propriétés du hash et les retournes sous la forme d'un
- * dictionnaire.
- */
-
-function handleHashChange(e)
-{
-    var s = window.location.hash;
-    if (!s) return;
-    s = s.slice(1);
-    var parts = s.split("&"), prop = {};
-    for (var i=0, pair; i < parts.length; ++i) {
-        pair = parts[i].split("=");
-        prop[pair[0]] = decodeURIComponent(pair[1]);
-    }
-    parseHashProperties(prop);
-}
-
-/*
- * Traite les propriétés du hash.
- */
-
-function parseHashProperties(prop)
-{
-    if ("ref" in prop) {
-        requestServerForContext(prop["ref"]);
-    }
 }

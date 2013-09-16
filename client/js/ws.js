@@ -1,10 +1,40 @@
 /**
- * Gestion de la connection WebSocket
+ * Concordance biblique intégrant un outil de recherche et le dictionnaire
+ * "Le Littré".
+ * 
+ * Fichier dédié à la gestion de la connection WebSocket.
+ * 
+ * Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
+ * 
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ * 
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *  GNU General Public License for more details.
+ * 
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ *  MA 02110-1301, USA.
+ */
+
+/*
+ * Adresse du serveur.
  */
 
 var host = "localhost:8080";
 var ress = "/bible";
+
+// représente la connexion websocket
 var s;
+
+/*
+ * Fonction déclenchée lorsque la connexion est attestée.
+ */
 
 function triggerConnected(e)
 {
@@ -14,6 +44,11 @@ function triggerConnected(e)
     }
     spinnerImg.classList.add("gone");
 }
+
+/*
+ * Récupère un message envoyé par le serveur. Le format attendu est un JSON
+ * sérialisé.
+ */
 
 function handleMessage(e)
 {
@@ -82,6 +117,10 @@ function handleContextResponse(res)
     }
 }
 
+/*
+ * Fonction appellée lorsqu'une erreur de connexion survient.
+ */
+
 function handleError(e)
 {
     if (s && s.readyState == WebSocket.OPEN) {
@@ -89,14 +128,23 @@ function handleError(e)
     }
 };
 
+/*
+ * Fonction appellée lorsque la connexion est fermée.
+ */
+
 function triggerClosed(e)
 {
     s = null;
+    // tente une reconnexion périodique
     if (!connectInterval) {
         connectInterval = setInterval(connectToServer, 10000);
     }
     spinnerImg.classList.remove("gone");
 }
+
+/*
+ * Tentative de connexion au serveur.
+ */
 
 function connectToServer()
 {
@@ -121,10 +169,6 @@ function connectToServer()
 window.addEventListener("beforeunload", function() {
     if (s) s.close();
 }, false);
-
-/**
- * Gestion du protocole
- */
 
 /* 
  * Envoi une requête de recherche de versets.
@@ -198,22 +242,4 @@ function requestServerForContext(ref)
     };
     var jsonData = JSON.stringify(dict);
     s.send(jsonData);
-}
-
-/*
- * Construit une chaîne de requète URI à partir d'un blob
- */
-
-function dictToQueryString(dict)
-{
-    var s="", e, first = true;
-    for (e in dict) {
-        if (!first) {
-            s += "&";
-        } else {
-            first = false;
-        }
-        s += e+"="+dict[e];
-    }
-    return s;
 }
