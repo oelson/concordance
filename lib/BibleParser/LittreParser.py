@@ -56,12 +56,18 @@ class XMLittreParser:
         return XMLittreEntree(entree)
     
 class XMLittreEntree:
-    
+    """
+    Une entrée du dictionnaire générée par le parseur XMLittreParser.
+    Une entrée correspond à une définition.
+    """
+
     entete = None
     prononciation = None
     nature = None
     corps = None
     variantes = []
+    historique = None
+    historiques = []
     remarque = None
     remarques = []
 
@@ -96,15 +102,57 @@ class XMLittreEntree:
         if not self.variantes:
             corps = self.get_corps()
             if corps is not None:
-                self.variantes = [(int(v.attrib["num"]) if "num" in v.attrib else -1, v.text) for v in corps.findall("./variante")]
+                for v in corps.findall("./variante"):
+                    variante = {
+                        "num": int(v.attrib["num"]) if "num" in v.attrib else -1,
+                        "txt": v.text
+                    }
+                    # trouve éventuellement des citations associées
+                    for c in v.findall("./cit"):
+                        if not "cit" in variante:
+                            variante["cit"] = []
+                        variante["cit"].append({
+                            "aut": c.attrib["aut"],
+                            "ref": c.attrib["ref"],
+                            "txt": c.text
+                        })
+                    self.variantes.append(variante)
         return self.variantes
     
+    def get_historique(self):
+        """
+        Assigne et retourne le noeud de type rubrique/historique.
+        """
+        if self.historique is None:
+            self.historique = self.entree.find("./rubrique[@nom='HISTORIQUE']")
+        return self.historique
+    
+    def get_historiques(self):
+        """
+        Assigne et retourne un tableau de compléments historiques.
+        Chaque entrée du tableau est un dictionnaire, pouvant éventuellement
+        contenir des citations.
+        """
+        if not self.historiques:
+            historique = self.get_historique()
+            if historique is not None:
+                # TODO <cit>
+                self.historiques = [i.text for i in historique.findall("indent")]
+        return self.historiques
+    
     def get_remarque(self):
+        """
+        Assigne et retourne le noeud de type rubrique/remarque.
+        """
         if self.remarque is None:
             self.remarque = self.entree.find("./rubrique[@nom='REMARQUE']")
         return self.remarque
     
     def get_remarques(self):
+        """
+        Assigne et retourne un tableau de remarques.
+        Chaque entrée du tableau est un dictionnaire.
+        """
         if not self.remarques:
             remarque = self.get_remarque()
             if remarque is not None:
