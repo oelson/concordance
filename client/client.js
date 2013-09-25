@@ -100,27 +100,42 @@ var activeReferenceLink = null;
 
 function findElementsByIds()
 {
+    // Liste des livres
     bookListOl = document.getElementById("book_list");
+    // Formulaire de recherche
     filterForm = document.forms["filtre"];
+    // Table d'affichage des versets correspondants à la recherche
     resultTable = document.getElementById("resultats_recherche");
+    // Boutons du formulaire
     launchButton = document.getElementById("lancer");
     cleanButton = document.getElementById("effacer");
     reinitButton = document.getElementById("reinitialiser");
+    // Barre de saisie des références
     filterBar = document.getElementById("filtre_reference");
+    // Conteneur des libellés des références
     referenceSection = document.getElementById("liste_reference");
+    // Libellé de référence globale
     fullBibleReference = document.getElementById("bible_entiere");
+    // Liste des suggestions de livres
     suggestionListSection = document.getElementById("suggestion_reference");
+    // Message d'erreur concernant la saisie des références
     referenceErrorSpan = document.getElementById("reference_error");
+    // Image de chargement
     spinnerImg = document.getElementById("spinner");
+    // Image de feremeture de la liste des suggestions
     suggestionCloseImg = document.getElementById("suggestion_close");
+    // Panneaux de l'interface
     bottomBar = document.getElementById("bottom");
     rightBar = document.getElementById("right");
+    // Barres de redimmensionnement
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
+    // Onglets
     contextTab = document.getElementById("tab-context");
-    readTab = document.getElementById("tab-read");
     dictTab = document.getElementById("tab-dict");
+    // Sections sous les onglets
     contextSection = document.getElementById("context");
+    dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
     termeCell = document.getElementById("dictionnary-terme");
     natureCell = document.getElementById("dictionnary-nature");
