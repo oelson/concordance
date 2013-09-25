@@ -297,6 +297,21 @@ function toggleLaunchButton()
     launchButton.disabled = !isFormSubmitable();
 }
 
+/**
+ * Dictionnaire
+ */
+
+/*
+ * Affiche une définition
+ */
+
+function displayDictionnaryEntry(entry)
+{
+    termeCell.appendChild(document.createTextNode(entry["nom"]));
+    natureCell.appendChild(document.createTextNode(entry["nature"]));
+    prononciationCell.appendChild(document.createTextNode(entry["prononciation"]));
+}
+
 /*
  * Gestion de l'affichage des définitions du dictionnaire.
  */

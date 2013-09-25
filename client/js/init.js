@@ -51,6 +51,7 @@ var bookListOl,
     contextTab,
     dictionnaryTab,
     contextSection,
+    dictionnarySection,
     termeCell,
     natureCell,
     prononciationCell,
@@ -119,6 +120,7 @@ function findElementsByIds()
     contextTab = document.getElementById("tab-context");
     dictionnaryTab = document.getElementById("tab-dict");
     contextSection = document.getElementById("context");
+    dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
     termeCell = document.getElementById("dictionnary-terme");
     natureCell = document.getElementById("dictionnary-nature");
