@@ -48,8 +48,8 @@ var bookListOl,
     rightBar,
     verticalResizeBar,
     horizontalResizeBar,
-    readTab,
-    dictTab,
+    contextTab,
+    dictionnaryTab,
     contextSection,
     termeCell,
     natureCell,
@@ -117,8 +117,7 @@ function findElementsByIds()
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
     contextTab = document.getElementById("tab-context");
-    readTab = document.getElementById("tab-read");
-    dictTab = document.getElementById("tab-dict");
+    dictionnaryTab = document.getElementById("tab-dict");
     contextSection = document.getElementById("context");
     // Dictionnaire
     termeCell = document.getElementById("dictionnary-terme");
@@ -198,6 +197,9 @@ function init()
     horizontalResizeBar.addEventListener("mousedown", initHorizontalResize, false);
     window.addEventListener("mousemove", continueHorizontalResize, false);
     window.addEventListener("mouseup", stopHorizontalResize, false);
+    // Onglets
+    contextTab.addEventListener("click", showContextTab, false);
+    dictionnaryTab.addEventListener("click", showDictionnaryTab, false);
     // Retaure éventuellement l'état précédent du formulaire
     restoreFormState();
     // Connection au serveur Websocket
