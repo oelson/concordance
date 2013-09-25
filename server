@@ -77,26 +77,31 @@ def handle(self, data):
         "tok": token
     }
     # le token permet de sélectionner le service approprié
-    if token == "search":
-        try:
+    try:
+        if token == "search":
+            # Recherche par mots-clés
             handleSearchRequest(parser, data, resp)
-        # TODO envoyer au client un code d'erreur non-fatal
-        except InvalidReferenceError as e:
-            self.error(str(e))
-            pass
-        # une erreur fatale quelconque
-        except Exception as e:
-            self.error(str(e))
-            self.updateState(WebSocketCode.WebSocketClientState.STATE_INITIATE_CLOSURE)
-            self.initiateClosingHandShake(
-                status=WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
-                reason=str(e)
-            )
+        elif token == "context":
+            # Demande de contexte autours d'un verset
+            handleContextRequest(parser, data, resp)
+        elif token == "dictionnary":
+            # Demande de définition d'un mot
+            handleDictionnaryRequest(parser, data, resp)
+        else:
+            self.error('unknown token "{}"'.format(token))
             return
-    elif token == "context":
-        handleContextRequest(parser, data, resp)
-    else:
-        self.error('unknown token "{}"'.format(token))
+    # TODO envoyer au client un code d'erreur non-fatal
+    except InvalidReferenceError as e:
+        self.error(str(e))
+        pass
+    # une erreur fatale quelconque
+    except Exception as e:
+        self.error(str(e))
+        self.updateState(WebSocketCode.WebSocketClientState.STATE_INITIATE_CLOSURE)
+        self.initiateClosingHandShake(
+            status=WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
+            reason=str(e)
+        )
         return
     # adjoint un marqueur de temps
     resp["now"] = int(round(time() * 1000))
@@ -176,6 +181,13 @@ def handleSearchRequest(parser, data, resp):
             "verse": verse
         })
     resp["res"] = verses
+
+def handleDictionnaryRequest((parser, data, resp):
+    """
+    Traite une recherche de définition dans le Littré.
+    """
+    # TODO
+    pass
 
 """
 Obtention de la liste des fichier XML disponnibles

@@ -67,6 +67,10 @@ function handleMessage(e)
     case "context":
         handleContextResponse(resp["res"]);
         break;
+    // Retour d'une demande de définition
+    case "dictionnary":
+        handleDictionnaryResponse(resp["res"]);
+        break;
     default:
         console.error("unknown token");
         break;
@@ -115,6 +119,17 @@ function handleContextResponse(res)
         lastContextualQueryBlockQuote.scrollIntoView();
         lastContextualQueryBlockQuote = null;
     }
+}
+
+/*
+ * Fonction de manipulation des réponses du serveur concernant les recherches
+ * dans le dictionnaire.
+ */
+
+function handleDictionnaryResponse(res)
+{
+    // TODO
+    console.log(res);
 }
 
 /*
@@ -242,4 +257,21 @@ function requestServerForContext(ref)
     };
     var jsonData = JSON.stringify(dict);
     s.send(jsonData);
+}
+
+/*
+ * Procède à une demande de définition dans le dictionnaire.
+ */
+ 
+function requestServerForDictionnary(word)
+{
+    if (!s) return;
+    var dict = {
+        "now": new Date().getTime(),
+        "tok": "dictionnary"
+    };
+    // TODO
+    console.log(dict);
+    //var jsonData = JSON.stringify(dict);
+    //s.send(jsonData);
 }
