@@ -23,6 +23,11 @@
  */
 
 /*
+ * TODO scinder ce fichier en ws.js + protocol.js
+ * TODO ajouter la gestion des statistiques de la recherche
+ */
+
+/*
  * Adresse du serveur.
  */
 

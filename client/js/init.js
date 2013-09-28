@@ -49,8 +49,10 @@ var bookListOl,
     verticalResizeBar,
     horizontalResizeBar,
     contextTab,
+    statistiqueTab,
     dictionnaryTab,
     contextSection,
+    statistiqueSection,
     dictionnarySection,
     termeCell,
     natureCell,
@@ -118,8 +120,10 @@ function findElementsByIds()
     verticalResizeBar = document.getElementById("vertical-resize");
     horizontalResizeBar = document.getElementById("horizontal-resize");
     contextTab = document.getElementById("tab-context");
+    statistiqueTab = document.getElementById("tab-stat");
     dictionnaryTab = document.getElementById("tab-dict");
     contextSection = document.getElementById("context");
+    contextSection = document.getElementById("statistique");
     dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
     termeCell = document.getElementById("dictionnary-terme");
