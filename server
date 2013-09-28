@@ -182,7 +182,7 @@ def handleSearchRequest(parser, data, resp):
         })
     resp["res"] = verses
 
-def handleDictionnaryRequest((parser, data, resp):
+def handleDictionnaryRequest(parser, data, resp):
     """
     Traite une recherche de définition dans le Littré.
     """
