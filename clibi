@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+# 
+# clibi (command line interface bible index): outil de recherche dans les textes
+# bibliques via la ligne de commande.
+#
+# Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+# MA 02110-1301, USA.
+
+import json
+import optparse
+import os
+import signal
+import sys
+
+from BibleParser.xml import XMLBibleParser
+
+"""
+Options de la ligne de commande.
+"""
+option_parser = optparse.OptionParser()
+
+# Options vitales
+option_parser.add_option("-t", "--bible-translation")
+option_parser.add_option("-T", "--bible-xml-file")
+# Options de traitement
+option_parser.add_option("-b", "--word-boundary")
+option_parser.add_option("-i", "--case-sensitive")
+option_parser.add_option("-x", "--accent-sensitive")
+# Mots-clés ou assimilés
+option_parser.add_option("-n", "--number")
+option_parser.add_option("-r", "--numeric-range")
+option_parser.add_option("-a", "--all-keywords")
+option_parser.add_option("-o", "--one-keyword")
+option_parser.add_option("-n", "--none-keyword")
+option_parser.add_option("-e", "--excact-expr")
+
+"""
+Constantes du script.
+"""
+
+# Nombre de versets à sélectionner autours d'une référence lors d'un
+# élargissement
+context_size = 5
+
+"""
+Obtention de la liste des fichier XML disponnibles.
+"""
+bible_xml_directory = os.environ.get("BIBLE_XML_DIRECTORY")
+
+if not bible_xml_directory:
+    print("env variable 'BIBLE_XML_DIRECTORY' must be set", file=sys.stderr)
+    sys.exit(1)
+
+# Liste les traductions de la bible existantes à partir du disque
+os.chdir(bible_xml_directory)
+for files in os.listdir("."):
+    if files.endswith(".xml"):
+        bible_translations.append(files[:-4])
+
+"""
+Instanciation du parseur XML.
+"""
+
+xml_path = "{}/{}.xml".format(
+    bible_xml_directory,
+    translation
+)
+
+with open(xml_path, 'r') as xml_file:
+    parser = XMLBibleParser(xml_file.read())
+
+"""
+Passage des arguments au parseur.
+"""
+
+# correspondance avec des mots-entiers
+if "bou" in opt:
+    parser.set_word_boundary(opt["bou"])
+# sensibilité à la case
+if "cas" in opt:
+    parser.set_case_sensitivity(opt["cas"])
+# sensibilité aux accents
+if "acc" in opt:
+    parser.set_accent_sensitivity(opt["acc"])
+# ajoute les références
+for r in opt["ref"]:
+    parser.add_reference(r)
+# recherche tous les mots suivants
+if "all" in opt:
+    parser.add_mandatory_keywords(opt["all"])
+# recherche au moins un des mots suivants
+if "one" in opt:
+    parser.add_one_of_keywords(opt["one"])
+# évite tous les mots suivants
+if "non" in opt:
+    parser.add_none_of_keywords(opt["non"])
+# expression exacte
+if "exp" in opt:
+    parser.add_exact_expression(opt["exp"])
+# recherche un nombre compris dans un intervalle
+if "ran" in opt:
+    if "l" in opt["ran"]:
+        if "h" in opt["ran"]:
+            parser.add_number_in_range(
+                int(opt["ran"]["l"]),
+                int(opt["ran"]["h"])
+            )
+        else:
+            parser.add_number_in_range(
+                int(opt["ran"]["l"])
+            )
+# préfixe les résultats par des tirets
+parser.enable_highlighting("_")
+
+for reference, verse in parser:
+    print("{}:\t{}".format(reference, verse))
