@@ -60,7 +60,8 @@ var bookListOl,
     domaineCell,
     etymologieCell,
     variantesCell,
-    citationsCell;
+    citationsCell,
+    historiqueCell;
 
 var selectedReferences  = {};
 
@@ -133,6 +134,7 @@ function findElementsByIds()
     etymologieCell = document.getElementById("dictionnary-etymologie");
     variantesCell = document.getElementById("dictionnary-variantes");
     citationsCell = document.getElementById("dictionnary-citations");
+    historiqueCell = document.getElementById("dictionnary-historique");
 }
 
 /*
