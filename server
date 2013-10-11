@@ -65,10 +65,10 @@ def handle(self, data):
     try:
         if token == "search":
             # Recherche par mots-clés
-            handleSearchRequest(data, resp)
+            handleSearchRequest(self, data, resp)
         elif token == "context":
             # Demande de contexte autours d'un verset
-            handleContextRequest(data, resp)
+            handleContextRequest(self, data, resp)
         elif token == "dictionnary":
             # Demande de définition d'un mot
             handleDictionnaryRequest(self, data, resp)
@@ -94,14 +94,14 @@ def handle(self, data):
     JSON = json.dumps(resp)
     self.send(JSON)
 
-def handleContextRequest(data, resp):
+def handleContextRequest(self, data, resp):
     """
     Traite une requête de contexte : parcours toutes les références voisines à
     la référence donnée en paramètre (clée "ref").
     Retourne un dictionnaire de la forme "livre > chapitre > verset" sous la
     clée "res" du dictionnaire "data".
     """
-    parser = get_bible_parser(data)
+    parser = get_bible_parser(self, data)
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"], context_size, context_size)
     # itère sur les versets correspondants
@@ -114,14 +114,14 @@ def handleContextRequest(data, resp):
         references[reference.book][reference.chapter_low][reference.verse_low] = verse
     resp["res"] = references
 
-def handleSearchRequest(data, resp):
+def handleSearchRequest(self, data, resp):
     """
     Traite une recherche par mots-clés : parcours tous les versets concordants
     aux différents paramètres donnés via le dictionnaire "data".
     Retourne une liste de paires (référence, texte) sous la clée "res" du
     dictionnaire "data".
     """
-    parser = get_bible_parser(data)
+    parser = get_bible_parser(self, data)
     # correspondance avec des mots-entiers
     if "bou" in data:
         parser.set_word_boundary(data["bou"])
@@ -181,7 +181,7 @@ def handleDictionnaryRequest(self, data, resp):
     entry = self.littre_parser.get_entree(data["word"])
     resp["res"] = entry.format()
 
-def get_bible_parser(data):
+def get_bible_parser(self, data):
     """
     TODO
     """
