@@ -6,6 +6,7 @@ from re import compile as compile_re
 
 #from BibleParser.XMLBibleParser import XMLBibleParser
 from BibleParser.Errors import *
+from BibleParser.BibleReference import BibleReference
 
 class BibleXMLReference(BibleReference):
     """

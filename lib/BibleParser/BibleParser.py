@@ -6,7 +6,6 @@ import re
 
 import xml.etree.ElementTree as ET
 
-from BibleParser.BibleReference import BibleXMLReference
 from BibleParser.Errors import *
 from BibleParser.Numbers import Number
 
@@ -72,33 +71,6 @@ class BibleParser:
         # compile une expression régulière permettant de détecter un espace ou
         # un tiret
         self._regex_match_space_dash = re.compile("[ -]")
-
-    def add_reference(self, reference):
-        """
-        Ajoute une référence en l'état.
-        L'entrée est une chaîne, ce qui est stocké est une instance de la classe
-        "BibleXMLReference".
-        """
-        bible_reference = BibleXMLReference(self, reference)
-        self.references[str(bible_reference)] = bible_reference
-
-    def add_contextual_reference(self,
-                                 reference,
-                                 left_lookahead,
-                                 right_lookahead):
-        """
-        Ajoute une référence simple en l'élargissant afin d'en faire ressortir
-        le contexte.
-        """
-        # TODO ne pas déborder au delà d'un chapitre dans le contexte pour les Psaumes
-        # TODO il faut permettre un choix entre plusieurs types de débordement (coupe exacte, au dernier point, au chapitre, au livre)
-        bible_reference = BibleXMLReference(self, reference)
-        for new_bible_reference in bible_reference.get_overflowing_references(
-                left_lookahead,
-                right_lookahead
-                ):
-            # ajoute la nouvelle référence
-            self.references[str(new_bible_reference)] = new_bible_reference
 
     def _verse_match_rules(self, verse):
         """
