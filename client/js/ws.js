@@ -271,10 +271,9 @@ function requestServerForDictionnary(word)
     if (!s) return;
     var dict = {
         "now": new Date().getTime(),
-        "tok": "dictionnary"
+        "tok": "dictionnary",
+        "word": word
     };
-    // TODO
-    console.log(dict);
-    //var jsonData = JSON.stringify(dict);
-    //s.send(jsonData);
+    var jsonData = JSON.stringify(dict);
+    s.send(jsonData);
 }

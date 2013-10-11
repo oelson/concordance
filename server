@@ -27,6 +27,7 @@ import sys
 
 from BibleParser.Errors import InvalidReferenceError
 from BibleParser.XMLBibleParser import XMLBibleParser
+from BibleParser.LittreParser import XMLittreParser
 from time import time, sleep
 from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
 
@@ -41,6 +42,7 @@ def init(self):
     instanciera N parseurs différents.
     """
     self.bible_parsers = {}
+    self.littre_parser = XMLittreParser(xmlittre_directory)
 
 def handle(self, data):
     """
@@ -52,23 +54,6 @@ def handle(self, data):
         self.error("no token given")
         return
     token = data["tok"]
-    # traduction de la bible à utiliser pour la recherche
-    if "tra" not in data:
-        self.error("no translation name given")
-        return
-    translation = data["tra"]
-    # instancie un parseur si nécessaire
-    if translation not in self.bible_parsers:
-        bible_xml_content = get_bible_xml(translation)
-        self.info("new parser for the translation '{}'".format(translation))
-        self.bible_parsers[translation] = XMLBibleParser(
-            # passe par une fonction de service pour ne pas recharger à chaque
-            # fois les mêmes fichiers (les fichiers XML contenant les bibles
-            # sont très lourds)
-            bible_xml_content
-        )
-    parser = self.bible_parsers[translation]
-    parser.clean()
     # prépare la future réponse sous la forme d'un dictionnaire
     # celui-ci sera encodé sous la forme d'une chaîne JSON
     resp = {
@@ -80,13 +65,13 @@ def handle(self, data):
     try:
         if token == "search":
             # Recherche par mots-clés
-            handleSearchRequest(parser, data, resp)
+            handleSearchRequest(data, resp)
         elif token == "context":
             # Demande de contexte autours d'un verset
-            handleContextRequest(parser, data, resp)
+            handleContextRequest(data, resp)
         elif token == "dictionnary":
             # Demande de définition d'un mot
-            handleDictionnaryRequest(parser, data, resp)
+            handleDictionnaryRequest(self, data, resp)
         else:
             self.error('unknown token "{}"'.format(token))
             return
@@ -95,27 +80,28 @@ def handle(self, data):
         self.error(str(e))
         pass
     # une erreur fatale quelconque
-    except Exception as e:
+    except BibleParserError as e:
         self.error(str(e))
         self.updateState(WebSocketCode.WebSocketClientState.STATE_INITIATE_CLOSURE)
         self.initiateClosingHandShake(
             status=WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
             reason=str(e)
         )
-        return
+        raise e
     # adjoint un marqueur de temps
     resp["now"] = int(round(time() * 1000))
     # envoie le résultat au client sous la forme d'une chaîne JSON
     JSON = json.dumps(resp)
     self.send(JSON)
 
-def handleContextRequest(parser, data, resp):
+def handleContextRequest(data, resp):
     """
     Traite une requête de contexte : parcours toutes les références voisines à
     la référence donnée en paramètre (clée "ref").
     Retourne un dictionnaire de la forme "livre > chapitre > verset" sous la
     clée "res" du dictionnaire "data".
     """
+    parser = get_bible_parser(data)
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"], context_size, context_size)
     # itère sur les versets correspondants
@@ -128,13 +114,14 @@ def handleContextRequest(parser, data, resp):
         references[reference.book][reference.chapter_low][reference.verse_low] = verse
     resp["res"] = references
 
-def handleSearchRequest(parser, data, resp):
+def handleSearchRequest(data, resp):
     """
     Traite une recherche par mots-clés : parcours tous les versets concordants
     aux différents paramètres donnés via le dictionnaire "data".
     Retourne une liste de paires (référence, texte) sous la clée "res" du
     dictionnaire "data".
     """
+    parser = get_bible_parser(data)
     # correspondance avec des mots-entiers
     if "bou" in data:
         parser.set_word_boundary(data["bou"])
@@ -182,21 +169,55 @@ def handleSearchRequest(parser, data, resp):
         })
     resp["res"] = verses
 
-def handleDictionnaryRequest(parser, data, resp):
+def handleDictionnaryRequest(self, data, resp):
     """
     Traite une recherche de définition dans le Littré.
+    Retourne un dictionnaire contenant la description du mot sous la clée "res"
+    du dictionnaire "data".
     """
-    # TODO
-    pass
+    if not "word" in data:
+        self.error("no word to look for found in data")
+        return
+    entry = self.littre_parser.get_entree(data["word"])
+    resp["res"] = entry.format()
+
+def get_bible_parser(data):
+    """
+    TODO
+    """
+    # traduction de la bible à utiliser pour la recherche
+    if "tra" not in data:
+        self.error("no translation name given")
+        return
+    translation = data["tra"]
+    # instancie un parseur si nécessaire
+    if translation not in self.bible_parsers:
+        bible_xml_content = get_bible_xml(translation)
+        self.info("new parser for the translation '{}'".format(translation))
+        self.bible_parsers[translation] = XMLBibleParser(
+            # passe par une fonction de service pour ne pas recharger à chaque
+            # fois les mêmes fichiers (les fichiers XML contenant les bibles
+            # sont très lourds)
+            bible_xml_content
+        )
+    parser = self.bible_parsers[translation]
+    parser.clean()
+    return parser
+
 
 """
 Obtention de la liste des fichier XML disponnibles
 """
 bible_translations  = []
 bible_xml_directory = os.environ.get("BIBLE_XML_DIRECTORY")
+xmlittre_directory  = os.environ.get("XMLITTRE_DIRECTORY")
 
 if not bible_xml_directory:
     print("env variable 'BIBLE_XML_DIRECTORY' must be set", file=sys.stderr)
+    sys.exit(1)
+
+if not xmlittre_directory:
+    print("env variable 'XMLITTRE_DIRECTORY' must be set", file=sys.stderr)
     sys.exit(1)
 
 # Liste les traductions de la bible existantes à partir du disque

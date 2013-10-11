@@ -158,3 +158,15 @@ class XMLittreEntree:
             if remarque is not None:
                 self.remarques = [i.text for i in remarque.findall("indent")]
         return self.remarques
+
+    def format(self):
+        """
+        Retourne la description de l'objet sus la forme d'un dictionnaire.
+        """
+        d = {}
+        d["nature"] = self.get_nature()
+        d["prononciation"] = self.get_prononciation()
+        d["variantes"] = self.get_variantes()
+        d["remarques"] = self.get_remarques()
+        d["historique"] = self.get_historiques()
+        return d
