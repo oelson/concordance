@@ -123,7 +123,7 @@ function findElementsByIds()
     statistiqueTab = document.getElementById("tab-stat");
     dictionnaryTab = document.getElementById("tab-dict");
     contextSection = document.getElementById("context");
-    contextSection = document.getElementById("statistique");
+    statistiqueSection = document.getElementById("statistique");
     dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
     termeCell = document.getElementById("dictionnary-terme");
