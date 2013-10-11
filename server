@@ -25,8 +25,8 @@ import os
 import signal
 import sys
 
-from BibleParser.Errors import InvalidReferenceError
-from BibleParser.XMLBibleParser import XMLBibleParser
+from BibleParser.Errors import InvalidReferenceError, BibleParserError
+from BibleParser.xml.XMLBibleParser import XMLBibleParser
 from BibleParser.LittreParser import XMLittreParser
 from time import time, sleep
 from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
