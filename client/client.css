@@ -2,6 +2,8 @@
  * Style global
  */
 
+q { quotes: '«\00A0' '\00A0»'; }
+
 html, body
 {
     padding: 0;
@@ -436,6 +438,11 @@ section#dictionnary > table > tbody > tr > td:nth-of-type(1)
 {
     font-weight: bold;
     color: #6D6D6D;
+}
+
+section#dictionnary > table > tbody > tr > td:nth-of-type(2)
+{
+    white-space: pre-line;
 }
 
 /*
