@@ -53,8 +53,8 @@ class XMLittreParser:
         entree = p.find("./entree[@terme='{}']".format(name))
         if entree is None:
             raise AttributeError("l'entrée \"{}\" n'existe pas".format(name))
-        return XMLittreEntree(entree)
-    
+        return XMLittreEntree(name, entree)
+
 class XMLittreEntree:
     """
     Une entrée du dictionnaire générée par le parseur XMLittreParser.
@@ -71,7 +71,8 @@ class XMLittreEntree:
     remarque = None
     remarques = []
 
-    def __init__(self, entree):
+    def __init__(self, mot, entree):
+        self.mot = mot
         self.entree = entree
 
     def get_entete(self):
@@ -105,16 +106,16 @@ class XMLittreEntree:
                 for v in corps.findall("./variante"):
                     variante = {
                         "num": int(v.attrib["num"]) if "num" in v.attrib else -1,
-                        "txt": v.text
+                        "txt": v.text.strip()
                     }
                     # trouve éventuellement des citations associées
                     for c in v.findall("./cit"):
                         if not "cit" in variante:
                             variante["cit"] = []
                         variante["cit"].append({
-                            "aut": c.attrib["aut"],
-                            "ref": c.attrib["ref"],
-                            "txt": c.text
+                            "aut": c.attrib["aut"].strip(),
+                            "ref": c.attrib["ref"].strip(),
+                            "txt": c.text.strip()
                         })
                     self.variantes.append(variante)
         return self.variantes
@@ -137,7 +138,7 @@ class XMLittreEntree:
             historique = self.get_historique()
             if historique is not None:
                 # TODO <cit>
-                self.historiques = [i.text for i in historique.findall("indent")]
+                self.historiques = [i.text.strip() for i in historique.findall("indent")]
         return self.historiques
     
     def get_remarque(self):
@@ -164,6 +165,7 @@ class XMLittreEntree:
         Retourne la description de l'objet sus la forme d'un dictionnaire.
         """
         d = {}
+        d["mot"] = self.mot
         d["nature"] = self.get_nature()
         d["prononciation"] = self.get_prononciation()
         d["variantes"] = self.get_variantes()
