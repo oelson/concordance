@@ -174,7 +174,7 @@ function addBookToContextList(bookName)
 {
     var h1 = document.createElement("h1");
     h1.appendChild(document.createTextNode(bookName));
-    contextSection.appendChild(h1);
+    contextContainerSection.appendChild(h1);
 }
 
 /*
@@ -185,7 +185,7 @@ function addChapterToContextList(chapter)
 {
     var h2 = document.createElement("h2");
     h2.appendChild(document.createTextNode(chapter));
-    contextSection.appendChild(h2);
+    contextContainerSection.appendChild(h2);
 }
 
 /*
@@ -213,7 +213,17 @@ function addVerseToContextList(book, chapter, verse, text)
     }
     q.appendChild(span);
     q.appendChild(textNode);
-    contextSection.appendChild(q);
+    // Sélection d'une partie de texte à la souris
+    q.addEventListener("mouseup", function() {
+        var selectionObj = window.getSelection();
+        var word = getSelectedWord(selectionObj);
+        if (word) {
+            showArrowBox(selectionObj, word);
+        } else {
+            hideArrowBox();
+        }
+    }, false);
+    contextContainerSection.appendChild(q);
 }
 
 /*
@@ -223,9 +233,97 @@ function addVerseToContextList(book, chapter, verse, text)
 function cleanContextList()
 {
     contextVerseList = {};
-    while (contextSection.childElementCount > 0) {
-        contextSection.removeChild(contextSection.firstElementChild);
+    while (contextContainerSection.childElementCount > 0) {
+        contextContainerSection.removeChild(contextContainerSection.firstElementChild);
     }
+}
+
+/*
+ * Vérifie la sélection courante pour voir si un mot est surligné.
+ */
+
+function getSelectedWord(selectionObj)
+{
+    if (!selectionObj || selectionObj.type != "Range") return;
+    // Extrait le texte précédent et suivant la sélection
+    var l = Math.min(selectionObj.anchorOffset, selectionObj.focusOffset),
+        r = Math.max(selectionObj.anchorOffset, selectionObj.focusOffset);
+    var textBefore = selectionObj.focusNode.textContent.slice(0, l);
+    var textAfter  = selectionObj.focusNode.textContent.slice(r);
+    // Le texte précédent doit soit être nul, soit ne pas terminer par une
+    // lettre. De même pour le texte suivant.
+    if ((!textBefore || !endWithALetterRegex.test(textBefore)) 
+    && (!textAfter || !startsWithALetterRegex.test(textAfter)))
+    {
+        // Vérifie que le texte sélectionné est bien un mot
+        var t = selectionObj.toString();
+        // Enlève éventuellement la particule précédent le mot
+        t = t.replace(/^[a-zA-Z]'/, "");
+        if (isAWordReqex.test(t)) {
+            return t;
+        }
+    }
+}
+
+/*
+ * Affiche la boîte de dialogue fléchée sous la sélection.
+ */
+
+function showArrowBox(selectionObj, word)
+{
+    arrowBoxSection.classList.add("hidden");
+    var x, y, w;
+    // Obtient les coordonnées de la sélection
+    var r = selectionObj.getRangeAt(0);
+    var rect = r.getClientRects()[0];
+    x = rect.left;
+    y = rect.top;
+    // Place la boîte soit au dessus du morceau de texte
+    y -= arrowBoxSection.offsetHeight;
+    // Déplace la boîte pour que la flèche soit alignée à gauche
+    x -= arrowBoxSection.offsetWidth / 2;
+    // Mesure le mot surligné
+    var textEl = document.createTextNode(word);
+    measureBlockQuote.appendChild(textEl);
+    w = measureBlockQuote.offsetWidth;
+    measureBlockQuote.removeChild(textEl);
+    // Déplace la flèche au milieu du mot
+    x += w / 2;
+    // Rend la position relative à la section de contexte
+    var coor = getAbsoluteCoordinates(contextSection);
+    x -= coor["x"];
+    y -= coor["y"];
+    // Tient compte du défilement
+    x += contextSection.scrollLeft;
+    y += contextSection.scrollTop;
+    // CSS
+    arrowBoxSection.style.left = x+"px";
+    arrowBoxSection.style.top  = y+"px";
+    arrowBoxSection.classList.remove("hidden");
+}
+
+/*
+ * Cache la boîte de dialogue fléchée.
+ */
+
+function hideArrowBox()
+{
+    arrowBoxSection.classList.add("hidden");
+}
+
+/*
+ * Retourne les coordonnées absolues d'un élément.
+ */
+
+function getAbsoluteCoordinates(el)
+{
+    var x=0, y=0
+    while (el) {
+        x += el.offsetLeft;
+        y += el.offsetTop;
+        el = el.offsetParent;
+    }
+    return {"x": x, "y": y};
 }
 
 /*

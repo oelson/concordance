@@ -71,6 +71,13 @@ a.decore-hover:hover
     display: none !important;
 }
 
+.hidden
+{
+    visibility: hidden;
+    top:  -4096px !important;
+    left: -4096px !important;
+}
+
 .no-width
 {
     width: 1px;
@@ -423,6 +430,66 @@ section#context blockquote
 section#context mark
 {
     background-color: #FFF8A2; 
+}
+
+/*
+ * Pointeurs de most en forme de boîte à flèche
+ */
+
+section#arrow-box
+{
+    position: absolute;
+    z-index: 10;
+}
+
+section#arrow-box-button-list
+{
+    background-image: -webkit-linear-gradient(top, rgb(144,144,144) 40%, rgb(77,77,77) 55%, rgb(33,33,33) 100%);
+    border: 1px solid #4C4C4C;
+    border-bottom-color: rgb(33,33,33);
+    box-shadow: 1px 1px rgba(255,255,255,.33) inset; 
+    border-radius: 5px;
+    box-sizing: border-box;
+    z-index: 50;
+    position: relative;
+}
+
+section#arrow-box-button-list button
+{
+    background: none;
+    border: none;
+    color: white;
+    padding: 5px 6px;
+    margin: 0;
+    font-weight: 300;
+}
+
+/*
+ * La flèche est un carré tourné de 45 degrés
+ */
+
+section#arrow-box-pointer
+{
+    width:  8px;
+    height: 8px;
+    -webkit-transform: rotate(45deg);
+    display: inline-block;
+    position: absolute;
+    z-index: 40;
+    background-image: -webkit-linear-gradient(left top, rgb(33,33,33) 54%, rgb(0,0,0) 100%);
+    border: 1px solid #4C4C4C;
+    left: 50%;
+    margin-left: -6px;
+    bottom: -4px;
+}
+
+/*
+ * Outil de mesure du texte
+ */
+
+blockquote#measure
+{
+    visibility: hidden;
 }
 
 /**

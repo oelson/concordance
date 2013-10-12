@@ -15,6 +15,7 @@
     <link rel="shortcut icon" type="image/gif" href="res/img/bible.gif" />
 </head>
 <body class="noscroll">
+    <!-- Disposition -->
     <table id="layout" class="h-expand v-expand">
     <tbody>
         <!-- en-tête -->
@@ -175,7 +176,7 @@
             </td>
             <!-- panneau de droite -->
             <td id="right">
-                <table id="right-layout" class="relative v-expand h-expand">
+                <table id="right-layout" class="v-expand h-expand">
                 <tbody>
                     <tr>
                         <td>
@@ -208,9 +209,24 @@
                         </td>
                     </tr>
                     <tr>
-                        <td id="bottom" class="relative no-height">
-                            <section id="context" class="scroll v-expand gone"></section>
+                        <td id="bottom" class="no-height">
+                            <!-- Contexte d'un verset -->
+                            <section id="context" class="relative scroll v-expand">
+                                <!-- Conteneur réel du texte -->
+                                <section id="context-container"></section>
+                                <!-- Boîte de dialogue flechée -->
+                                <section id="arrow-box" class="hidden">
+                                    <section id="arrow-box-button-list">
+                                        <button type="button">Définition</button>
+                                    </section>
+                                    <section id="arrow-box-pointer"></section>
+                                </section>
+                                <!-- Élement servant à mesurer une chaîne de caractères -->
+                                <blockquote id="measure"></blockquote>
+                            </section>
+                            <!-- Statistiques autours d'une recherche -->
                             <section id="statistique" class="scroll v-expand gone"></section>
+                            <!-- Définition d'un mot -->
                             <section id="dictionnary" class="scroll v-expand gone">
                                 <table>
                                 <tbody>

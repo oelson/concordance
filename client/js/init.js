@@ -52,6 +52,7 @@ var bookListOl,
     statistiqueTab,
     dictionnaryTab,
     contextSection,
+    contextContainerSection,
     statistiqueSection,
     dictionnarySection,
     termeCell,
@@ -61,7 +62,9 @@ var bookListOl,
     etymologieCell,
     variantesCell,
     citationsCell,
-    historiqueCell;
+    historiqueCell,
+    arrowBoxSection,
+    measureBlockQuote;
 
 var selectedReferences  = {};
 
@@ -97,6 +100,12 @@ var activeReferenceLink = null;
     "ùúûüu"
 ];
 
+var aLetterRegex = "[a-zA-Z" + accentMapping.join("") + "]";
+
+var startsWithALetterRegex = new RegExp("^"+aLetterRegex);
+var endWithALetterRegex = new RegExp(aLetterRegex+"$");
+var isAWordReqex = new RegExp("^"+aLetterRegex+"+$");
+
 /*
  * Récupère divers noeuds HTML dans des variables globales.
  */
@@ -123,7 +132,9 @@ function findElementsByIds()
     contextTab = document.getElementById("tab-context");
     statistiqueTab = document.getElementById("tab-stat");
     dictionnaryTab = document.getElementById("tab-dict");
+    // Contexte d'un verset
     contextSection = document.getElementById("context");
+    contextContainerSection = document.getElementById("context-container");
     statistiqueSection = document.getElementById("statistique");
     dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
@@ -135,6 +146,9 @@ function findElementsByIds()
     variantesCell = document.getElementById("dictionnary-variantes");
     citationsCell = document.getElementById("dictionnary-citations");
     historiqueCell = document.getElementById("dictionnary-historique");
+    // Boîte de dialogue fléchée
+    arrowBoxSection = document.getElementById("arrow-box");
+    measureBlockQuote = document.getElementById("measure");
 }
 
 /*
@@ -180,11 +194,6 @@ function init()
     }
     // Ferme la boîte à suggestions
     suggestionCloseImg.addEventListener("click", hideBookSuggestion, false);
-    // Sélection de mots dans l'onglet de lecture contextuelle
-    contextSection.addEventListener("select", function(e) {
-        var text = getSelection().toString();
-        handleSelectedText(text)
-    }, false);
     // Gestion de l'intervalle de nombres
     filterForm.elements["nombres_min"].addEventListener("change", handleMinMaxValuesChange, false);
     filterForm.elements["nombres_max"].addEventListener("change", handleMinMaxValuesChange, false);
