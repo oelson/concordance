@@ -21,8 +21,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301, USA.
 
+import argparse
 import json
-import optparse
 import os
 import signal
 import sys
@@ -32,22 +32,76 @@ from BibleParser.xml import XMLBibleParser
 """
 Options de la ligne de commande.
 """
-option_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser(
+    description="Outil de recherche dans les textes bibliques"
+)
 
-# Options vitales
-option_parser.add_option("-t", "--bible-translation")
-option_parser.add_option("-T", "--bible-xml-file")
-# Options de traitement
-option_parser.add_option("-b", "--word-boundary")
-option_parser.add_option("-i", "--case-sensitive")
-option_parser.add_option("-x", "--accent-sensitive")
+# arguments vitaux
+arg_parser.add_argument("-t", "--bible-translation",
+    dest="translation",
+    help="Traduction de la bible à utiliser (nom du fichier XML sans préfixe ni suffixe - voir la variable d'environnement BIBLE_XML_PATH)"
+)
+arg_parser.add_argument("-T", "--bible-xml-file",
+    dest="xml",
+    help="Chemin complet vers le fichier XML à utiliser"
+)
+# arguments de traitement
+arg_parser.add_argument("-b", "--word-boundary",
+    dest="word_boundary",
+    action="store_true",
+    help="Recherche des mots entiers"
+)
+arg_parser.add_argument("-i", "--case-sensitive",
+    dest="case_sensitive",
+    action="store_true",
+    type=bool,
+    default=False,
+    help="Active la sensibilité à la case"
+)
+arg_parser.add_argument("-x", "--accent-sensitive",
+    dest="accent_sensitive",
+    action="store_true",
+    type=bool,
+    default=False,
+    help="Active la sensibilité aux accents"
+)
 # Mots-clés ou assimilés
-option_parser.add_option("-n", "--number")
-option_parser.add_option("-r", "--numeric-range")
-option_parser.add_option("-a", "--all-keywords")
-option_parser.add_option("-o", "--one-keyword")
-option_parser.add_option("-n", "--none-keyword")
-option_parser.add_option("-e", "--excact-expr")
+arg_parser.add_argument("-N", "--number",
+    dest="search_number",
+    type=int,
+    nargs="*",
+    help="Une suite de nombres entiers à rechercher"
+)
+arg_parser.add_argument("-r", "--numeric-range",
+    dest="search_range",
+    nargs="?",
+    help="Un intervalle de nombres entiers à rechercher"
+)
+arg_parser.add_argument("-a", "--all-keywords",
+    dest="search_all_keywords",
+    narg="?",
+    help="Une liste de mots à trouver tous ensembles"
+)
+arg_parser.add_argument("-o", "--one-keyword",
+    dest="search_one_keywords",
+    nargs="*",
+    help="Une liste de mots dont un seul doit-être trouvé"
+)
+arg_parser.add_argument("-n", "--none-keyword",
+    dest="search_none_keywords",
+    nargs="?",
+    help="Une liste de mots interdits"
+)
+arg_parser.add_argument("-e", "--excact-expr",
+    dest="search_exact_expression",
+    nargs="*",
+    help="Une expression exacte à rechercher"
+)
+
+args = arg_parser.parse_args()
+
+print(args)
+sys.exit(0)
 
 """
 Constantes du script.
