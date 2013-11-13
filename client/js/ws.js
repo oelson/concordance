@@ -131,25 +131,91 @@ function handleContextResponse(res)
 
 function handleDictionnaryResponse(res)
 {
+//XXX
+console.log(res);
+return;
+//XXX
+    // Mot recherché
     if ("mot" in res) {
+        if (termeCell.firstChild) {
+            termeCell.removeChild(termeCell.firstChild);
+        }
         termeCell.appendChild(document.createTextNode(res["mot"]));
         termeCell.parentNode.classList.remove("gone");
+    } else {
+        termeCell.parentNode.classList.add("gone");
     }
+    // Nature du mot
     if ("nature" in res) {
+        if (natureCell.firstChild) {
+            natureCell.removeChild(natureCell.firstChild);
+        }
         natureCell.appendChild(document.createTextNode(res["nature"]));
         natureCell.parentNode.classList.remove("gone");
+    } else {
+        natureCell.parentNode.classList.add("gone");
     }
+    // Prononciation du mot
     if ("prononciation" in res) {
+        if (prononciationCell.firstChild) {
+            prononciationCell.removeChild(prononciationCell.firstChild);
+        }
         prononciationCell.appendChild(document.createTextNode(res["prononciation"]));
         prononciationCell.parentNode.classList.remove("gone");
+    } else {
+        prononciationCell.parentNode.classList.add("gone");
     }
+    // Variantes du mot
     if ("variantes" in res) {
+        if (variantesCell.firstChild) {
+            variantesCell.removeChild(variantesCell.firstChild);
+        }
         // Énumération des variantes du mot
-        var variantesOL = document.createElement("ol");
-        for (var i=0, variante, varianteLI, txt; i < res["variantes"].length; ++i) {
-            variante = res["variantes"][i];
-            varianteLI = document.createElement("li");
-            // Énumération des citations associées à chaque variante
+        olEl = buildVarianteList(res["variantes"]);
+        variantesCell.appendChild(olEl);
+        variantesCell.parentNode.classList.remove("gone");
+    } else {
+        variantesCell.parentNode.classList.add("gone");
+    }
+    // Remarques
+    if ("remarques" in res) {
+        // TODO
+        //console.log(res["remarques"]);
+    }
+    // Historique du mot
+    if ("historique" in res) {
+        if (historiqueCell.firstChild) {
+            historiqueCell.removeChild(historiqueCell.firstChild);
+        }
+        var historiqueUL = document.createElement("ul");
+        for (var i=0, historique, historiqueLI; i < res["historique"].length; ++i) {
+            historique = res["historique"][i];
+            historiqueLI = document.createElement("li");
+            historiqueLI.appendChild(document.createTextNode(historique));
+            historiqueUL.appendChild(historiqueLI);
+        }
+        historiqueCell.appendChild(historiqueUL);
+        historiqueCell.parentNode.classList.remove("gone");
+    } else {
+        historiqueCell.parentNode.classList.add("gone");
+    }
+    showDictionnaryTab();
+}
+
+/*
+ * TODO
+ */
+
+function buildVarianteList(variantes)
+{
+    var variantesOL = document.createElement("ol");
+    for (var i=0, variante, varianteLI, txt; i < variantes.length; ++i) {
+        variante = variantes[i];
+        varianteLI = document.createElement("li");
+        // Place premièrement le nom de la variante, puis ses citations
+        varianteLI.appendChild(document.createTextNode(variante["txt"]));
+        // Énumération des citations associées à chaque variante
+        if ("cit" in variante) {
             var citationsUL = document.createElement("ul");
             for (var j=0, citation, ul, citationLI, u, q; j < variante["cit"].length; ++j) {
                 citation = variante["cit"][j];
@@ -162,34 +228,15 @@ function handleDictionnaryResponse(res)
                 citationLI.appendChild(document.createTextNode(" : "));
                 q.appendChild(document.createTextNode(citation["txt"]));
                 citationLI.appendChild(q);
-                citationLI.appendChild(document.createTextNode(")"));
                 citationsUL.appendChild(citationLI);
+                varianteLI.appendChild(citationsUL);
             }
-            // Place premièrement le nom de la variante, puis ses citations
-            varianteLI.appendChild(document.createTextNode(variante["txt"]));
-            varianteLI.appendChild(citationsUL);
-            variantesOL.appendChild(varianteLI);
         }
-        variantesCell.appendChild(variantesOL);
-        variantesCell.parentNode.classList.remove("gone");
+        variantesOL.appendChild(varianteLI);
     }
-    if ("remarques" in res) {
-        // TODO
-        //console.log(res["remarques"]);
-    }
-    if ("historique" in res) {
-        var historiqueUL = document.createElement("ul");
-        for (var i=0, historique, historiqueLI; i < res["historique"].length; ++i) {
-            historique = res["historique"][i];
-            historiqueLI = document.createElement("li");
-            historiqueLI.appendChild(document.createTextNode(historique));
-            historiqueUL.appendChild(historiqueLI);
-        }
-        historiqueCell.appendChild(historiqueUL);
-        historiqueCell.parentNode.classList.remove("gone");
-    }
-    showDictionnaryTab();
+    return variantesOL;
 }
+
 
 /*
  * Fonction appellée lorsqu'une erreur de connexion survient.

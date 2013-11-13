@@ -64,7 +64,8 @@ var bookListOl,
     citationsCell,
     historiqueCell,
     arrowBoxSection,
-    measureBlockQuote;
+    measureBlockQuote,
+    getDefinitionButton;
 
 var selectedReferences  = {};
 
@@ -149,6 +150,7 @@ function findElementsByIds()
     // Boîte de dialogue fléchée
     arrowBoxSection = document.getElementById("arrow-box");
     measureBlockQuote = document.getElementById("measure");
+    getDefinitionButton = document.getElementById("get-definition");
 }
 
 /*
@@ -219,6 +221,11 @@ function init()
     dictionnaryTab.addEventListener("click", showDictionnaryTab, false);
     // Retaure éventuellement l'état précédent du formulaire
     restoreFormState();
+    // Obtient la définition du mot sélectionné
+    getDefinitionButton.addEventListener("click", function(e) {
+        // Le mot sélectionné aura préalablement été sauvé dans l'objet
+        requestServerForDictionnary(this.word);
+    }, false);
     // Connection au serveur Websocket
     connectToServer();
 }

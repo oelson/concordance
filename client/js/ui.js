@@ -238,6 +238,24 @@ function cleanContextList()
     }
 }
 
+HTMLElement.prototype.clear = function()
+{
+    if (this.firstChild) {
+        while (this.firstChild) {
+            this.removeChild(this.firstChild);
+        }
+        return true;
+    }
+    return false;
+}
+
+function cleanDictionnarySection()
+{
+    if (termeCell.clear()) {
+        termeCell.parentNode.classList.add("gone");
+    }
+}
+
 /*
  * Vérifie la sélection courante pour voir si un mot est surligné.
  */
@@ -300,6 +318,8 @@ function showArrowBox(selectionObj, word)
     arrowBoxSection.style.left = x+"px";
     arrowBoxSection.style.top  = y+"px";
     arrowBoxSection.classList.remove("hidden");
+    // Sauve le mot à chercher dans le bouton
+    getDefinitionButton.word = word;
 }
 
 /*
