@@ -1,39 +1,31 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 # 
-# "Bible Index" Python3 WebSocket server.
+# Serveur WebSocket déservant les données les textes bibliques
+# de la concordance.
 #
 # Copyright 2013 Houillon Nelson <houillon.nelson@gmail.com>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-# MA 02110-1301, USA.
+
+import pprint
 
 import json
 import os
 import signal
 import sys
 
-from BibleParser.Errors import InvalidReferenceError, BibleParserError
-from BibleParser.xml.XMLBibleParser import XMLBibleParser
-from BibleParser.LittreParser import XMLittreParser
+from LittreParser.parse import parser as LittreParser
+from LittreParser.error import EntryNotFound as LittreEntryNotFound
+
+from BibleParser.xml import parser as XMLBibleParser
+from BibleParser.error import InvalidReferenceError, BibleParserError
+
 from time import time, sleep
 from WebSocketServer import WebSocketServer, WebSocketCode, WebSocketException
 
 # Nombre de versets à sélectionner autours d'une référence lors d'un
 # élargissement
 context_size = 5
+
 
 def init(self):
     """
@@ -42,7 +34,8 @@ def init(self):
     instanciera N parseurs différents.
     """
     self.bible_parsers = {}
-    self.littre_parser = XMLittreParser(xmlittre_directory)
+    self.littre_parser = LittreParser(xmlittre_directory)
+
 
 def handle(self, data):
     """
@@ -76,23 +69,23 @@ def handle(self, data):
             self.error('unknown token "{}"'.format(token))
             return
     # TODO envoyer au client un code d'erreur non-fatal
-    except InvalidReferenceError as e:
+    except (InvalidReferenceError, LittreEntryNotFound) as e:
         self.error(str(e))
-        pass
     # une erreur fatale quelconque
-    except BibleParserError as e:
+    except Exception as e:
         self.error(str(e))
-        self.updateState(WebSocketCode.WebSocketClientState.STATE_INITIATE_CLOSURE)
-        self.initiateClosingHandShake(
-            status=WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
-            reason=str(e)
+        self.close(
+            WebSocketCode.CloseFrameStatusCode.INTERNAL_SERVER_ERROR,
+            str(e)
         )
         raise e
-    # adjoint un marqueur de temps
-    resp["now"] = int(round(time() * 1000))
-    # envoie le résultat au client sous la forme d'une chaîne JSON
-    JSON = json.dumps(resp)
-    self.send(JSON)
+    else:
+        # adjoint un marqueur de temps
+        resp["now"] = int(round(time() * 1000))
+        # envoie le résultat au client sous la forme d'une chaîne JSON
+        JSON = json.dumps(resp)
+        self.send(JSON)
+
 
 def handleContextRequest(self, data, resp):
     """
@@ -113,6 +106,7 @@ def handleContextRequest(self, data, resp):
             references[reference.book][reference.chapter_low] = {}
         references[reference.book][reference.chapter_low][reference.verse_low] = verse
     resp["res"] = references
+
 
 def handleSearchRequest(self, data, resp):
     """
@@ -169,6 +163,7 @@ def handleSearchRequest(self, data, resp):
         })
     resp["res"] = verses
 
+
 def handleDictionnaryRequest(self, data, resp):
     """
     Traite une recherche de définition dans le Littré.
@@ -178,8 +173,10 @@ def handleDictionnaryRequest(self, data, resp):
     if not "word" in data:
         self.error("no word to look for found in data")
         return
-    entry = self.littre_parser.get_entree(data["word"])
-    resp["res"] = entry.format()
+    entries = self.littre_parser.get_entries_as_dict(data["word"])
+    self.info("found definition of '{}'".format(data["word"]))
+    resp["res"] = json.dumps(entries)
+
 
 def get_bible_parser(self, data):
     """
@@ -261,7 +258,7 @@ server = WebSocketServer.server(
     port=8080,
     init=init,
     handle=handle,
-    debug=WebSocketCode.WebSocketDebugLevel.PRINT_NOTHING
+    debug=WebSocketCode.WebSocketDebugLevel.PRINT_ERROR
 )
 
 # Arrête le serveur en cas de réception de SIGINT(2) ou de SIGTERM(15)

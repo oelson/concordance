@@ -18,5 +18,3 @@
 
 __version__ = "0.1"
 __author__  = "Nelson HOUILLON <houillon.nelson@gmail.com>"
-
-__all__ = ["BibleReference", "XMLBibleParser", "Errors"]
