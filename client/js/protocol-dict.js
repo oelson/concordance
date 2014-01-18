@@ -41,6 +41,10 @@ function handleDictionnaryResponse(dom)
             corps.getElementsByTagName("variante"),
             tbody
         );
+        // Vide premièrement la section puis ajoute la nouvelle définition
+        while (dictionnarySection.firstChild) {
+            dictionnarySection.removeChild(dictionnarySection.firstChild);
+        }
         dictionnarySection.appendChild(table);
     }
     showDictionnaryTab();
@@ -78,35 +82,98 @@ function handleVariantes(variantes, tbody)
     var varRow = tbody.getElementsByClassName("variantes")[0];
     var varCell = varRow.getElementsByTagName("td")[1];
     var variante, olVar = document.createElement("ol"), liDef;
-    var xpr, tmp, label;
+    var label;
+    var indentsUl, indentLi;
     for (var i=0; i < variantes.length; ++i) {
         variante = variantes[i];
         liDef = document.createElement("li");
+
         // Le libellé de la variante peut être contenu dans un ensemble de
         // noeuds et de noeuds texte, situés les uns derrière les autres
-        xpr = document.evaluate(
-            "(./semantique/text() | ./text())",
-            variante, 
-            null,
-            XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-            null
-        );
-        label = "";
-        do {
-            tmp = xpr.iterateNext();
-            if (tmp) {
-                label += tmp.nodeValue.replace(/\n+/g, " ");
-            }
-        }
-        while (tmp);
-        // la description textuelle est en général le premier noeud
+        label = getRootText(variante, ["semantique"]);
         liDef.appendChild(document.createTextNode(label));
+
+        // Récupère les indentations
+        indentsUl = handleIndents(variante);
+        if (indentsUl) {
+            liDef.appendChild(indentsUl)
+        }
+
         olVar.appendChild(liDef);
     }
     varCell.appendChild(olVar);
     if (variantes.length > 0) {
         varRow.classList.remove("gone");
     }
+}
+
+/*
+ * Gestion des "indent", à savoir la structure de la définition
+ */
+
+function handleIndents(parent)
+{
+    var indent;
+    var xpr = document.evaluate(
+        "./indent",
+        parent,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    var indentsUl = null, indentLi;
+    do {
+        indent = xpr.iterateNext();
+        if (indent) {
+            if (!indentsUl) {
+                indentsUl = document.createElement("ul");
+            }
+            indentLi = document.createElement("li");
+            // Obtient uniquement le texte à la racine
+            indentLi.appendChild(document.createTextNode(getRootText(indent)));
+            indentsUl.appendChild(indentLi)
+        }
+    }
+    while (indent);
+    return indentsUl;
+}
+
+/*
+ * Récupère la concaténation des noeuds texte situés à la racine d'un élément.
+ * Conçu pour remplacer "element.textContent", qui est récursif.
+ */
+
+function getRootText(element, allowedTags)
+{
+    var xpathExpr = "./text()";
+    // Ajoute une liste de tags à inspécter depuis la racine
+    if (allowedTags) {
+        xpathExpr = "("+xpathExpr;
+        for (var i=0; i < length; ++i) {
+            if (i > 0) {
+                xpathExpr += "|";
+            }
+            xpathExpr += "./"+allowedTags[i]+"/text()";
+        }
+        xpathExpr = xpathExpr+")";
+    }
+    var xpr = document.evaluate(
+        xpathExpr,
+        element, 
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    var tmp;
+    var text = "";
+    do {
+        tmp = xpr.iterateNext();
+        if (tmp) {
+            text += tmp.nodeValue.replace(/\n+/g, " ");
+        }
+    }
+    while (tmp);
+    return text;
 }
 
 /*
