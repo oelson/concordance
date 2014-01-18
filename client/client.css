@@ -496,6 +496,11 @@ blockquote#measure
  * Dictionnaire
  */
 
+table#terme-model
+{
+    display: none;
+}
+
 section#dictionnary > table
 {
     border-spacing: 10px 2px;

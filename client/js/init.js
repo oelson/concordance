@@ -55,14 +55,7 @@ var bookListOl,
     contextContainerSection,
     statistiqueSection,
     dictionnarySection,
-    termeCell,
-    natureCell,
-    prononciationCell,
-    domaineCell,
-    etymologieCell,
-    variantesCell,
-    citationsCell,
-    historiqueCell,
+    termeModelTable,
     arrowBoxSection,
     measureBlockQuote,
     getDefinitionButton;
@@ -139,14 +132,8 @@ function findElementsByIds()
     statistiqueSection = document.getElementById("statistique");
     dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
-    termeCell = document.getElementById("dictionnary-terme");
-    natureCell = document.getElementById("dictionnary-nature");
-    prononciationCell = document.getElementById("dictionnary-prononciation");
-    domaineCell = document.getElementById("dictionnary-domaine");
-    etymologieCell = document.getElementById("dictionnary-etymologie");
-    variantesCell = document.getElementById("dictionnary-variantes");
-    citationsCell = document.getElementById("dictionnary-citations");
-    historiqueCell = document.getElementById("dictionnary-historique");
+    termeModelTable = document.getElementById("terme-model");
+    termeModelTable.removeAttribute("id");
     // Boîte de dialogue fléchée
     arrowBoxSection = document.getElementById("arrow-box");
     measureBlockQuote = document.getElementById("measure");

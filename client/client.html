@@ -11,10 +11,50 @@
     <script src="js/reference.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/ws.js"></script>
+    <script src="js/protocol-dict.js"></script>
+    <script src="js/protocol-cntx.js"></script>
+    <script src="js/protocol-srch.js"></script>
     <script src="js/resize.js"></script>
     <link rel="shortcut icon" type="image/gif" href="res/img/bible.gif" />
 </head>
 <body class="noscroll">
+    <!-- Noeud HTML servant de modèle à recopier pour chaque terme à afficher -->
+    <table id="terme-model">
+    <tbody>
+        <tr class="terme gone">
+            <td>Terme</td>
+            <td></td>
+        </tr>
+        <tr class="nature gone">
+            <td>Nature</td>
+            <td></td>
+        </tr>
+        <tr class="prononciation gone">
+            <td>Prononciation</td>
+            <td></td>
+        </tr>
+        <tr class="domaine gone">
+            <td>Domaine</td>
+            <td></td>
+        </tr>
+        <tr class="etymologie gone">
+            <td>Étymologie</td>
+            <td></td>
+        </tr>
+        <tr class="variantes gone">
+            <td>Variantes</td>
+            <td></td>
+        </tr>
+        <tr class="citations gone">
+            <td>Citations</td>
+            <td id="dictionnary-citations"></td>
+        </tr>
+        <tr class="historique gone">
+            <td>Historique</td>
+            <td id="dictionnary-historique"></td>
+        </tr>
+    </tbody>
+    </table>
     <!-- Disposition -->
     <table id="layout" class="h-expand v-expand">
     <tbody>
@@ -228,42 +268,7 @@
                             <section id="statistique" class="scroll v-expand gone"></section>
                             <!-- Définition d'un mot -->
                             <section id="dictionnary" class="scroll v-expand gone">
-                                <table>
-                                <tbody>
-                                    <tr class="gone">
-                                        <td>Terme</td>
-                                        <td id="dictionnary-terme"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Nature</td>
-                                        <td id="dictionnary-nature"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Prononciation</td>
-                                        <td id="dictionnary-prononciation"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Domaine</td>
-                                        <td id="dictionnary-domaine"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Étymologie</td>
-                                        <td id="dictionnary-etymologie"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Variantes</td>
-                                        <td id="dictionnary-variantes"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Citations</td>
-                                        <td id="dictionnary-citations"></td>
-                                    </tr>
-                                    <tr class="gone">
-                                        <td>Historique</td>
-                                        <td id="dictionnary-historique"></td>
-                                    </tr>
-                                </tbody>
-                                </table>
+                                
                             </section>
                         </td>
                     </tr>

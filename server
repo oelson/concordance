@@ -12,6 +12,7 @@ import json
 import os
 import signal
 import sys
+import xml.etree.ElementTree as ET
 
 from LittreParser.parse import parser as LittreParser
 from LittreParser.error import EntryNotFound as LittreEntryNotFound
@@ -167,15 +168,20 @@ def handleSearchRequest(self, data, resp):
 def handleDictionnaryRequest(self, data, resp):
     """
     Traite une recherche de définition dans le Littré.
-    Retourne un dictionnaire contenant la description du mot sous la clée "res"
-    du dictionnaire "data".
+    Alimente la réponse resp["res"] avec une représentation XML des noeuds
+    correspondants à l'entrée data["word"]
     """
     if not "word" in data:
         self.error("no word to look for found in data")
         return
-    entries = self.littre_parser.get_entries_as_dict(data["word"])
+    nodes = self.littre_parser.get_entries(data["word"])
     self.info("found definition of '{}'".format(data["word"]))
-    resp["res"] = json.dumps(entries)
+    # crée une chaîne XML contenant tous les noeuds retournés
+    xml_output = "\n".join([ET.tostring(n, encoding="unicode") for n in nodes])
+    resp["res"] = '<terme n="{}">\n{}\n<terme>'.format(
+        data["word"],
+        xml_output
+    )
 
 
 def get_bible_parser(self, data):
