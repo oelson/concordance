@@ -68,6 +68,7 @@ function handleDictionnaryResponse(dom)
         dictionnarySection.clear();
         dictionnarySection.appendChild(table);
     }
+    hideArrowBox();
     showDictionnaryTab();
 }
 
