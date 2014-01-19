@@ -169,77 +169,8 @@ function cleanSearchList()
 }
 
 /*
- * Ajoute un nom de livre à la fin de la section de lecture.
-   TODO Il faut afficher les psaumes et les proverbes différement
+ * 
  */
-
-function addBookToContextList(bookName)
-{
-    var h1 = document.createElement("h1");
-    h1.appendChild(document.createTextNode(bookName));
-    contextContainerSection.appendChild(h1);
-}
-
-/*
- * Ajoute un numéro de chapitre à la fin de la section de lecture.
- */
-
-function addChapterToContextList(chapter)
-{
-    var h2 = document.createElement("h2");
-    h2.appendChild(document.createTextNode(chapter));
-    contextContainerSection.appendChild(h2);
-}
-
-/*
- * Ajoute un verset à la lecture contextuelle (panneau du bas).
- */
-
-function addVerseToContextList(book, chapter, verse, text)
-{
-    // sauvegarde indépendante du DOM
-    contextVerseList[verse] = text;
-    var span = document.createElement("span");
-    span.appendChild(document.createTextNode(" "+verse+" "));
-    var q = document.createElement("blockquote");
-    // Met en surbrillance le verset clé
-    var textNode = document.createTextNode(text);
-    if (lastContextualQueryReference.book == book &&
-        lastContextualQueryReference.chapterRange["low"] == chapter &&
-        lastContextualQueryReference.verseRange["low"] == verse)
-    {
-        var mark = document.createElement("mark");
-        mark.appendChild(textNode);
-        textNode = mark;
-        // Sauve la référence sur le noeud pour pouvoir l'afficher à la fin
-        lastContextualQueryBlockQuote = q;
-    }
-    q.appendChild(span);
-    q.appendChild(textNode);
-    // Sélection d'une partie de texte à la souris
-    q.addEventListener("mouseup", function() {
-        var selectionObj = window.getSelection();
-        var word = getSelectedWord(selectionObj);
-        if (word) {
-            showArrowBox(selectionObj, word);
-        } else {
-            hideArrowBox();
-        }
-    }, false);
-    contextContainerSection.appendChild(q);
-}
-
-/*
- * Vide le panneau de lecture contextuelle.
- */
-
-function cleanContextList()
-{
-    contextVerseList = {};
-    while (contextContainerSection.childElementCount > 0) {
-        contextContainerSection.removeChild(contextContainerSection.firstElementChild);
-    }
-}
 
 function cleanDictionnarySection()
 {
