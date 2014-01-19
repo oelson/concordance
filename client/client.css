@@ -510,11 +510,18 @@ section#dictionnary > table > tbody > tr > td:nth-of-type(1)
 {
     font-weight: bold;
     color: #6D6D6D;
+    vertical-align: top;
 }
 
 section#dictionnary > table > tbody > tr > td:nth-of-type(2)
 {
     white-space: pre-line;
+}
+
+section#dictionnary > table > tbody > tr > td:nth-of-type(2) > ol
+{
+    padding-left: 20px;
+    margin-top: 0;
 }
 
 /*
