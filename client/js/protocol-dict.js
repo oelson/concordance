@@ -102,10 +102,10 @@ function handleVariantes(variantes, tbody)
 {
     var varRow = tbody.getElementsByClassName("variantes")[0];
     var varCell = varRow.getElementsByTagName("td")[1];
-    var variante, olVar = document.createElement("ol"), liDef;
+    var olVar = document.createElement("ol"), liDef;
     var label;
-    var indentsUl, indentLi;
-    for (var i=0; i < variantes.length; ++i) {
+    var indentsUl, indentLi, cits, citsUl;
+    for (var i=0, variante; i < variantes.length; ++i) {
         variante = variantes[i];
         liDef = document.createElement("li");
 
@@ -113,6 +113,17 @@ function handleVariantes(variantes, tbody)
         // noeuds et de noeuds texte, situés les uns derrière les autres
         label = getRootText(variante, ["semantique"]);
         liDef.appendChild(document.createTextNode(label));
+
+        // Traite les éventuelles citations
+        cits = getCitations(variante);
+        if (cits.length > 0) {
+            citsUl = document.createElement("ul");
+            for (var j=0, citLi; j < cits.length; ++j) {
+                citLi = cits[j];
+                citsUl.appendChild(citLi);
+            }
+            liDef.appendChild(citsUl);
+        }
 
         // Récupère les indentations
         indentsUl = handleIndents(variante);
@@ -142,17 +153,29 @@ function handleIndents(parent)
         XPathResult.ORDERED_NODE_ITERATOR_TYPE,
         null
     );
-    var indentsUl = null, indentLi;
+    var indentsUl = null, indentLi, cits, citsUl;
     do {
         indent = xpr.iterateNext();
         if (indent) {
             if (!indentsUl) {
                 indentsUl = document.createElement("ul");
+                indentsUl.classList.add("indent");
             }
             indentLi = document.createElement("li");
             // Obtient uniquement le texte à la racine
             indentLi.appendChild(document.createTextNode(getRootText(indent)));
-            indentsUl.appendChild(indentLi)
+            // Traite les éventuelles citations imbriquées
+            cits = getCitations(indent);
+            if (cits.length > 0) {
+                citsUl = document.createElement("ul");
+                for (var i=0, citLi; i < cits.length; ++i) {
+                    citLi = cits[i];
+                    citsUl.appendChild(citLi);
+                }
+                indentLi.appendChild(citsUl);
+            }
+            // Ajoute l'indentation à la liste
+            indentsUl.appendChild(indentLi);
         }
     }
     while (indent);
@@ -170,11 +193,8 @@ function getRootText(element, allowedTags)
     // Ajoute une liste de tags à inspécter depuis la racine
     if (allowedTags) {
         xpathExpr = "("+xpathExpr;
-        for (var i=0; i < length; ++i) {
-            if (i > 0) {
-                xpathExpr += "|";
-            }
-            xpathExpr += "./"+allowedTags[i]+"/text()";
+        for (var i=0; i < allowedTags.length; ++i) {
+            xpathExpr += "| ./"+allowedTags[i]+"/text()";
         }
         xpathExpr = xpathExpr+")";
     }
@@ -198,130 +218,68 @@ function getRootText(element, allowedTags)
 }
 
 /*
- * TODO obsolete
+ * Retourne un noeud HTML <li> bâti à partir d'une citation
+ * d'une entrée.
  */
 
-function buildVarianteList(variantes)
+function buildCitation(cit)
 {
-    var variantesOL = document.createElement("ol");
-    for (var i=0, variante, varianteLI, txt; i < variantes.length; ++i) {
-        variante = variantes[i];
-        varianteLI = document.createElement("li");
-        // Place premièrement le nom de la variante, puis ses citations
-        varianteLI.appendChild(document.createTextNode(variante["txt"]));
-        // Énumération des citations associées à chaque variante
-        if ("cit" in variante) {
-            var citationsUL = document.createElement("ul");
-            for (var j=0, citation, ul, citationLI, u, q; j < variante["cit"].length; ++j) {
-                citation = variante["cit"][j];
-                citationLI = document.createElement("li");
-                u = document.createElement("u");
-                q = document.createElement("q");
-                citationLI.appendChild(document.createTextNode(citation["aut"] + ", "));
-                u.appendChild(document.createTextNode(citation["ref"]));
-                citationLI.appendChild(u);
-                citationLI.appendChild(document.createTextNode(" : "));
-                q.appendChild(document.createTextNode(citation["txt"]));
-                citationLI.appendChild(q);
-                citationsUL.appendChild(citationLI);
-                varianteLI.appendChild(citationsUL);
-            }
-        }
-        variantesOL.appendChild(varianteLI);
-    }
-    return variantesOL;
-}
-
-/*
- * Représente une citation.
- */
-
-function format_citation(citation)
-{
-    var p = document.createElement("p");
-    var aut = document.createElement("i");
-    var ref = document.createElement("u");
-    var q = document.createElement("blockquote");
+    var li, u, q, aut, ref, txt;
     
-    aut.appendChild(document.createTextNode(citation["aut"]));
-    ref.appendChild(document.createTextNode(citation["ref"]));
-    q.appendChild(document.createTextNode(citation["text"]));
+    aut = cit.getAttribute("aut");
+    ref = cit.getAttribute("ref");
+    txt = cit.textContent;
+
+    li = document.createElement("li");
     
-    p.appendChild(aut);
-    p.appendChild(ref);
-    p.appendChild(q);
+    if (aut) {
+        li.appendChild(document.createTextNode(aut));
+    }
+    if (ref) {
+        if (aut) {
+            li.appendChild(document.createTextNode(", "));
+        }
+        u = document.createElement("u");
+        u.appendChild(document.createTextNode(ref));
+        li.appendChild(u);
+    }
     
-    return p;
-}
-
-/*
- * Représente un ensemble de variantes sous la forme d'une liste à puces
- * ordonnée.
- * Retourne la liste à puce.
- */
-
-function format_variantes(variantes)
-{
-    var ol = document.createElement("ol"), li, v;
-    for (var i=0; i < variantes.length; ++i) {
-        v = variantes[i];
-        li = format_variante(v);
-        // le format peut-être récursif
-        if ("indent" in v) {
-            li.appendChild(format_variantes(v["indent"]));
-        }
-        ol.appendChild(li);
+    if (aut || ref) {
+        li.appendChild(document.createTextNode(" : "));
     }
-    return ol;
-}
 
-/*
- * Formatte une variante sous la forme d'un élément de list à puce, et le
- * retourne.
- * Éventuellement récursif sur l'attribut "indent".
- */
-
-function format_variante(v)
-{
-    var li, li_cit;
-    li = document.createElement("li")
-    li.appendChild(document.createTextNode(v["text"]));
-    // citations attachées à une variante
-    if ("cit" in v) {
-        var ul_cit = document.createElement("ul");
-        for (var cit in v["cit"]) {
-            li_cit = document.createElement("li");
-            li_cit.appendChild(format_citation(cit));
-            ul_cit.appendChild(li_cit);
-        }
-        li.appendChild(ul_cit);
+    if (txt) {
+        q = document.createElement("q");
+        q.appendChild(document.createTextNode(txt));
+        li.appendChild(q);
     }
+
     return li;
 }
 
 /*
- * 
+ * Retourne une liste de noeuds <li> représentant les citations
+ * trouvées dans le noeud parent.
  */
 
-function format_synonymes(definition)
+function getCitations(parent)
 {
-    // TODO
-}
-
-/*
- * 
- */
-
-function format_historique(definition)
-{
-    // TODO
-}
-
-/*
- * 
- */
-
-function format_etymologies(definition)
-{
-    // TODO
+    var listElements = [];
+    var xpr = document.evaluate(
+        "./cit",
+        parent,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    var cit, li;
+    do {
+        cit = xpr.iterateNext();
+        if (!cit) continue;
+        li = buildCitation(cit);
+        listElements.push(li);
+    }
+    while (cit);
+    
+    return listElements;
 }
