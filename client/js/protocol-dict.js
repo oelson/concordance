@@ -105,10 +105,14 @@ function handleVariantes(variantes, tbody)
     var olVar = document.createElement("ol"), liDef;
     var label;
     var indentsUl, indentLi, cits, citsUl;
+
+    olVar.classList.add("variante");
+    
+    // Boucle sur les variantes de la définition
     for (var i=0, variante; i < variantes.length; ++i) {
         variante = variantes[i];
         liDef = document.createElement("li");
-
+        
         // Le libellé de la variante peut être contenu dans un ensemble de
         // noeuds et de noeuds texte, situés les uns derrière les autres
         label = getRootText(variante, ["semantique"]);
@@ -131,8 +135,16 @@ function handleVariantes(variantes, tbody)
             liDef.appendChild(indentsUl)
         }
 
+        // Active le dépliement des sous-listes
+        liDef.addEventListener("click", function(e) {
+            // N'admet de basculer le pliage que sur le clic du <li>
+            if (e.target != this) return;
+            this.classList.toggle("unfolded");
+        }, false);
+
         olVar.appendChild(liDef);
     }
+    
     varCell.appendChild(olVar);
     if (variantes.length > 0) {
         varRow.classList.remove("gone");

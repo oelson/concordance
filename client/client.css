@@ -518,10 +518,38 @@ section#dictionnary > table > tbody > tr > td:nth-of-type(2)
     white-space: pre-line;
 }
 
-section#dictionnary > table > tbody > tr > td:nth-of-type(2) > ol
+/*
+ * Variantes de la définition
+ */
+
+ol.variante
 {
     padding-left: 20px;
     margin-top: 0;
+}
+
+/*
+ * Plie les listes à puce par défaut
+ */
+
+ol.variante > li
+{
+    cursor: pointer;
+}
+
+ol.variante > li *
+{
+    cursor: default;
+}
+
+ol.variante > li > ul
+{
+    display: none;
+}
+
+ol.variante > li.unfolded > ul
+{
+    display: block;
 }
 
 /*
