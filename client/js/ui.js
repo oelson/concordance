@@ -238,17 +238,6 @@ function cleanContextList()
     }
 }
 
-HTMLElement.prototype.clear = function()
-{
-    if (this.firstChild) {
-        while (this.firstChild) {
-            this.removeChild(this.firstChild);
-        }
-        return true;
-    }
-    return false;
-}
-
 function cleanDictionnarySection()
 {
     if (termeCell.clear()) {

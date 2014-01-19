@@ -42,9 +42,7 @@ function handleDictionnaryResponse(dom)
             tbody
         );
         // Vide premièrement la section puis ajoute la nouvelle définition
-        while (dictionnarySection.firstChild) {
-            dictionnarySection.removeChild(dictionnarySection.firstChild);
-        }
+        dictionnarySection.clear();
         dictionnarySection.appendChild(table);
     }
     showDictionnaryTab();
