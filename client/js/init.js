@@ -223,14 +223,8 @@ document.addEventListener("DOMContentLoaded", init, false);
 function ret(e) { return e; }
 
 /**
- * Gestion du dictionnaire
+ * Surcharge du code Javascript natif.
  */
-
-function handleSelectedText(text)
-{
-    // TODO
-    console.log(text);
-}
 
 /*
  * Vide un élément.
@@ -245,4 +239,19 @@ HTMLElement.prototype.clear = function()
         return true;
     }
     return false;
+}
+
+/*
+ * Retourne les coordonnées absolues d'un élément.
+ */
+
+HTMLElement.prototype.getAbsoluteCoordinates = function()
+{
+    var x=0, y=0, el = this;
+    while (el) {
+        x += el.offsetLeft;
+        y += el.offsetTop;
+        el = el.offsetParent;
+    }
+    return {"x": x, "y": y};
 }
