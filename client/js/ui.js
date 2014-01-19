@@ -97,7 +97,10 @@ function cleanReferenceList()
 }
 
 /*
- * Surbrillance des résultats
+ * Surbrillance des résultats. Les mots correspondants à la recherche reviennent
+ * encadrés par des tirets bas '_'.
+ * La balise <mark> comporte, dans la spécification HTML5, les mêmes propriétés
+ * d'affichage que la recherche native du navigateur web.
  */
 
 function highlightMatches(s)
