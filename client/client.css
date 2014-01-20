@@ -538,6 +538,12 @@ ol.foldable > li
     cursor: pointer;
 }
 
+ol.foldable > li > ol,
+ol.foldable > li > ul
+{
+    cursor: default;
+}
+
 ol.foldable > li.lonely
 {
     cursor: default;
