@@ -519,10 +519,11 @@ section#dictionnary > table > tbody > tr > td:nth-of-type(2)
 }
 
 /*
- * Variantes de la définition
+ * Listes à puce impliquées dans les définitions
  */
 
-ol.variante
+section#dictionnary ol,
+section#dictionnary ul
 {
     padding-left: 20px;
     margin-top: 0;
@@ -532,22 +533,22 @@ ol.variante
  * Plie les listes à puce par défaut
  */
 
-ol.variante > li
+ol.foldable > li
 {
     cursor: pointer;
 }
 
-ol.variante > li *
+ol.foldable > li.lonely
 {
     cursor: default;
 }
 
-ol.variante > li > ul
+ol.foldable > li > ul
 {
     display: none;
 }
 
-ol.variante > li.unfolded > ul
+ol.foldable > li.unfolded > ul
 {
     display: block;
 }

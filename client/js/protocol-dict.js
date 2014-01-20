@@ -61,7 +61,11 @@ function handleDictionnaryResponse(dom)
         );
         corps = entry.getElementsByTagName("corps")[0];
         handleVariantes(
-            corps.getElementsByTagName("variante"),
+            corps,
+            tbody
+        );
+        handleRemarques(
+            entry,
             tbody
         );
         // Vide premièrement la section puis ajoute la nouvelle définition
@@ -95,19 +99,46 @@ function handleEntete(terme, entete, tbody)
 }
 
 /*
+ * Traite les remarques de la définition
+ */
+
+function handleRemarques(entree, tbody)
+{
+    var remRow = tbody.getElementsByClassName("remarques")[0];
+    var remCell = remRow.getElementsByTagName("td")[1];
+    var xpr = document.evaluate(
+        "./rubrique[@nom='REMARQUE']",
+        entree,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    // Itère sur les remarques
+    var remList;
+    for (var rem = xpr.iterateNext(); rem; rem = xpr.iterateNext()) {
+        remList = handleIndents(rem);
+        remCell.appendChild(remList);
+    }
+    if (remCell.firstChild) {
+        remRow.classList.remove("gone");
+    }
+}
+
+/*
  * Parcours les variantes d'une entrée et les représente au sein d'une table,
  * représentée ici par son corps "tbody".
  */
 
-function handleVariantes(variantes, tbody)
+function handleVariantes(corps, tbody)
 {
+    var variantes = corps.getElementsByTagName("variante");
     var varRow = tbody.getElementsByClassName("variantes")[0];
     var varCell = varRow.getElementsByTagName("td")[1];
     var olVar = document.createElement("ol"), liDef;
     var label;
     var indentsUl, indentLi, cits, citsUl;
 
-    olVar.classList.add("variante");
+    olVar.classList.add("foldable");
     
     // Boucle sur les variantes de la définition
     for (var i=0, variante; i < variantes.length; ++i) {
@@ -137,12 +168,15 @@ function handleVariantes(variantes, tbody)
         }
 
         // Active le dépliement des sous-listes
-        liDef.addEventListener("click", function(e) {
-            // N'admet de basculer le pliage que sur le clic du <li>
-            if (e.target != this) return;
-            this.classList.toggle("unfolded");
-        }, false);
-
+        if (liDef.childElementCount > 0) {
+            liDef.addEventListener("click", function(e) {
+                // N'admet de basculer le pliage que sur le clic du <li>
+                if (e.target != this) return;
+                this.classList.toggle("unfolded");
+            }, false);
+        } else {
+            liDef.classList.add("lonely");
+        }
         olVar.appendChild(liDef);
     }
     
@@ -158,7 +192,6 @@ function handleVariantes(variantes, tbody)
 
 function handleIndents(parent)
 {
-    var indent;
     var xpr = document.evaluate(
         "./indent",
         parent,
@@ -166,33 +199,40 @@ function handleIndents(parent)
         XPathResult.ORDERED_NODE_ITERATOR_TYPE,
         null
     );
-    var indentsUl = null, indentLi, cits, citsUl;
-    do {
-        indent = xpr.iterateNext();
-        if (indent) {
-            if (!indentsUl) {
-                indentsUl = document.createElement("ul");
-                indentsUl.classList.add("indent");
+    var indList, indentLi, cits, citsUl, text, numericList = false;
+    for (var indent = xpr.iterateNext(); indent; indent = xpr.iterateNext()) {
+        text = getRootText(indent);
+        if (!indList) {
+            // Construit une liste de type numérique ou non selon le préfixe
+            numericList = text.search(/^\d+\./) != -1;
+            if (numericList) {
+                indList = document.createElement("ol");
+            } else {
+                indList = document.createElement("ul");
             }
-            indentLi = document.createElement("li");
-            // Obtient uniquement le texte à la racine
-            indentLi.appendChild(document.createTextNode(getRootText(indent)));
-            // Traite les éventuelles citations imbriquées
-            cits = getCitations(indent);
-            if (cits.length > 0) {
-                citsUl = document.createElement("ul");
-                for (var i=0, citLi; i < cits.length; ++i) {
-                    citLi = cits[i];
-                    citsUl.appendChild(citLi);
-                }
-                indentLi.appendChild(citsUl);
-            }
-            // Ajoute l'indentation à la liste
-            indentsUl.appendChild(indentLi);
+            indList.classList.add("indent");
         }
+        // Retranche l'indice numérique du texte
+        if (numericList) {
+            text = text.replace(/^\d+\.\s+/, "");
+        }
+        indentLi = document.createElement("li");
+        // Obtient uniquement le texte à la racine
+        indentLi.appendChild(document.createTextNode(text));
+        // Traite les éventuelles citations imbriquées
+        cits = getCitations(indent);
+        if (cits.length > 0) {
+            citsUl = document.createElement("ul");
+            for (var i=0, citLi; i < cits.length; ++i) {
+                citLi = cits[i];
+                citsUl.appendChild(citLi);
+            }
+            indentLi.appendChild(citsUl);
+        }
+        // Ajoute l'indentation à la liste
+        indList.appendChild(indentLi);
     }
-    while (indent);
-    return indentsUl;
+    return indList;
 }
 
 /*
