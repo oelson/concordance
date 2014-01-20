@@ -77,14 +77,10 @@ function handleDictionnaryResponse(dom)
             tbody
         );
         corps = entry.getElementsByTagName("corps")[0];
-        handleVariantes(
-            corps,
-            tbody
-        );
-        handleRemarques(
-            entry,
-            tbody
-        );
+        handleVariantes(corps, tbody);
+        handleRemarques(entry, tbody);
+        handleEtymoligie(entry, tbody);
+        handleHistorique(entry, tbody);
         // Vide premièrement la section puis ajoute la nouvelle définition
         dictionnarySection.clear();
         dictionnarySection.appendChild(table);
@@ -140,6 +136,59 @@ function handleRemarques(entree, tbody)
         remRow.classList.remove("gone");
     }
 }
+
+/*
+ * Traite l'étymologie d'une définition
+ */
+
+function handleEtymoligie(entree, tbody)
+{
+    var etyRow = tbody.getElementsByClassName("etymologie")[0];
+    var etyCell = etyRow.getElementsByTagName("td")[1];
+    var xpr = document.evaluate(
+        "./rubrique[@nom='ÉTYMOLOGIE']",
+        entree,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    // Itère sur les étymologies
+    var etyList;
+    for (var ety = xpr.iterateNext(); ety; ety = xpr.iterateNext()) {
+        etyList = handleIndents(ety);
+        etyCell.appendChild(etyList);
+    }
+    if (etyCell.firstChild) {
+        etyRow.classList.remove("gone");
+    }
+}
+
+/*
+ * Traite l'historique d'une définition
+ */
+
+function handleHistorique(entree, tbody)
+{
+    var hisRow = tbody.getElementsByClassName("historique")[0];
+    var hisCell = hisRow.getElementsByTagName("td")[1];
+    var xpr = document.evaluate(
+        "./rubrique[@nom='HISTORIQUE']",
+        entree,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    // Itère sur les étymologies
+    var hisList;
+    for (var his = xpr.iterateNext(); his; his = xpr.iterateNext()) {
+        hisList = handleIndents(his);
+        hisCell.appendChild(hisList);
+    }
+    if (hisCell.firstChild) {
+        hisRow.classList.remove("gone");
+    }
+}
+
 
 /*
  * Parcours les variantes d'une entrée et les représente au sein d'une table,
