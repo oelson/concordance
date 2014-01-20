@@ -38,6 +38,21 @@ function requestServerForDictionnary(word)
     s.send(jsonData);
 }
 
+/*
+ * Ajouter un titre de table (sens n°1, 2, etc...)
+ */
+
+function buildTableHead(table, index)
+{
+    var thead = document.createElement("thead");
+    var tr = document.createElement("tr");
+    var th = document.createElement("th");
+    th.setAttribute("colspan", 2);
+    th.appendChild(document.createTextNode("Sens n°"+index));
+    tr.appendChild(th);
+    thead.appendChild(tr);
+    table.appendChild(thead);
+}
 
 /*
  * Fonction de manipulation des réponses du serveur concernant les recherches
@@ -53,7 +68,9 @@ function handleDictionnaryResponse(dom)
         entry = entries[i];
         table = termeModelTable.cloneNode(true);
         tbody = table.tBodies[0];
-        // TODO ajouter un titre de table avec <thead> (sens n°1,2,etc...)
+        if (entries.length > 1) {
+            buildTableHead(table, i);
+        }
         handleEntete(
             entry.getAttribute("terme"),
             entry.getElementsByTagName("entete")[0],
