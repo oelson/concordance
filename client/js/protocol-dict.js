@@ -78,9 +78,11 @@ function handleDictionnaryResponse(dom)
         );
         corps = entry.getElementsByTagName("corps")[0];
         handleVariantes(corps, tbody);
+        handleSynonymes(entry, tbody);
         handleRemarques(entry, tbody);
         handleEtymoligie(entry, tbody);
         handleHistorique(entry, tbody);
+        handleSupplements(entry, tbody);
         // Vide premièrement la section puis ajoute la nouvelle définition
         dictionnarySection.clear();
         dictionnarySection.appendChild(table);
@@ -109,6 +111,32 @@ function handleEntete(terme, entete, tbody)
     termeRow.classList.remove("gone");
     prononRow.classList.remove("gone");
     natureRow.classList.remove("gone");
+}
+
+/*
+ * Traite les synonymes de la définition
+ */
+
+function handleSynonymes(entree, tbody)
+{
+    var synRow = tbody.getElementsByClassName("synonymes")[0];
+    var synCell = synRow.getElementsByTagName("td")[1];
+    var xpr = document.evaluate(
+        "./rubrique[@nom='SYNONYME']",
+        entree,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    // Itère sur les remarques
+    var synList;
+    for (var syn = xpr.iterateNext(); syn; syn = xpr.iterateNext()) {
+        synList = handleIndents(syn);
+        synCell.appendChild(synList);
+    }
+    if (synCell.firstChild) {
+        synRow.classList.remove("gone");
+    }
 }
 
 /*
@@ -189,6 +217,33 @@ function handleHistorique(entree, tbody)
     }
 }
 
+/*
+ * Traite les supplément au dictionnaire.
+ */
+
+function handleSupplements(entree, tbody)
+{
+    var supRow = tbody.getElementsByClassName("supplements")[0];
+    var supCell = supRow.getElementsByTagName("td")[1];
+    var xpr = document.evaluate(
+        "./rubrique[@nom='SUPPLÉMENT AU DICTIONNAIRE']",
+        entree,
+        null,
+        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+        null
+    );
+    // Itère sur les étymologies
+    var supList, supVars;
+    for (var sup = xpr.iterateNext(); sup; sup = xpr.iterateNext()) {
+        supList = handleIndents(sup);
+        //supVars = handleVariantes(sup);
+        supCell.appendChild(supList);
+        //supCell.appendChild(supVars);
+    }
+    if (supCell.firstChild) {
+        supRow.classList.remove("gone");
+    }
+}
 
 /*
  * Parcours les variantes d'une entrée et les représente au sein d'une table,
