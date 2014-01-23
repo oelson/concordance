@@ -62,10 +62,13 @@ function buildTableHead(table, index)
 function handleDictionnaryResponse(dom)
 {
     var root = dom.documentElement;
-    var entries = root.getElementsByTagName("entree"), entry, entryOl, table,
-        tbody, corps;
+    var entries = root.getElementsByTagName("entree"), entry, entryOl;
+    var table, tbody;
+    var tmp;
+    
     for (var i=0; i < entries.length; ++i) {
         entry = entries[i];
+        // Crée (via la duplication) une table par entrée retournée
         table = termeModelTable.cloneNode(true);
         tbody = table.tBodies[0];
         if (entries.length > 1) {
@@ -76,19 +79,57 @@ function handleDictionnaryResponse(dom)
             entry.getElementsByTagName("entete")[0],
             tbody
         );
-        corps = entry.getElementsByTagName("corps")[0];
-        handleVariantes(corps, tbody);
-        handleSynonymes(entry, tbody);
-        handleRemarques(entry, tbody);
-        handleEtymoligie(entry, tbody);
-        handleHistorique(entry, tbody);
-        handleSupplements(entry, tbody);
+        // Traite les variantes
+        tmp = handleVariantes(entry, tbody);
+        fillDictTableLine(tbody, "variante", tmp);
+
+        // Traite les synonymes
+        tmp = handleSynonymes(entry);
+        for (var j=0; j < tmp.length; ++j) {
+            fillDictTableLine(tbody, "synonyme", tmp[j]);
+        }
+
+        tmp = handleRemarques(entry);
+        for (var j=0; j < tmp.length; ++j) {
+            fillDictTableLine(tbody, "remarque", tmp[j]);
+        }
+        
+        tmp = handleEtymoligie(entry);
+        for (var j=0; j < tmp.length; ++j) {
+            fillDictTableLine(tbody, "etymologie", tmp[j]);
+        }
+        
+        tmp = handleHistorique(entry);
+        for (var j=0; j < tmp.length; ++j) {
+            fillDictTableLine(tbody, "historique", tmp[j]);
+        }
+
+        // handleSupplements(entry, tbody);
+        
         // Vide premièrement la section puis ajoute la nouvelle définition
         dictionnarySection.clear();
         dictionnarySection.appendChild(table);
     }
     hideArrowBox();
     showDictionnaryTab();
+}
+
+/*
+ * Fonction de service. Ajoute un élément HTML à la deuxième colonne de la ligne
+ * de table référencée par un nom de classe.
+ * Si l'élément à ajouter n'est pas nul, retire le nom de classe qui masque la 
+ * ligne concernée (affiche la ligne via CSS).
+ */
+
+function fillDictTableLine(tbody, lineClassName, element)
+{
+    var row, cell;
+    if (element) {
+        row = tbody.getElementsByClassName(lineClassName)[0];
+        cell = row.getElementsByTagName("td")[1];
+        cell.appendChild(element);
+        row.classList.remove("gone");
+    }
 }
 
 /*
@@ -114,111 +155,68 @@ function handleEntete(terme, entete, tbody)
 }
 
 /*
- * Traite les synonymes de la définition
+ * Traite de manière générique les éléments d'une entrée _uniquement_ composés
+ * d'indentations <indent>.
+ * Retourne un tableau de listes HTML décrochées du DOM.
  */
-
-function handleSynonymes(entree, tbody)
+ 
+function handleIndentsInElement(entree, rubrique)
 {
-    var synRow = tbody.getElementsByClassName("synonymes")[0];
-    var synCell = synRow.getElementsByTagName("td")[1];
     var xpr = document.evaluate(
-        "./rubrique[@nom='SYNONYME']",
+        "./rubrique[@nom='"+rubrique+"']",
         entree,
         null,
         XPathResult.ORDERED_NODE_ITERATOR_TYPE,
         null
     );
-    // Itère sur les remarques
-    var synList;
-    for (var syn = xpr.iterateNext(); syn; syn = xpr.iterateNext()) {
-        synList = handleIndents(syn);
-        synCell.appendChild(synList);
+    // Itère sur les rubriques correspondantes
+    var indentList, resultArray = [];
+    for (var rub = xpr.iterateNext(); rub; rub = xpr.iterateNext()) {
+        indentList = handleIndents(rub);
+        resultArray.push(indentList);
     }
-    if (synCell.firstChild) {
-        synRow.classList.remove("gone");
-    }
+    return resultArray;
+}
+
+/*
+ * Traite les synonymes de la définition
+ */
+
+function handleSynonymes(entree)
+{
+    return handleIndentsInElement(entree, "SYNONYME");
 }
 
 /*
  * Traite les remarques de la définition
  */
 
-function handleRemarques(entree, tbody)
+function handleRemarques(entree)
 {
-    var remRow = tbody.getElementsByClassName("remarques")[0];
-    var remCell = remRow.getElementsByTagName("td")[1];
-    var xpr = document.evaluate(
-        "./rubrique[@nom='REMARQUE']",
-        entree,
-        null,
-        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-        null
-    );
-    // Itère sur les remarques
-    var remList;
-    for (var rem = xpr.iterateNext(); rem; rem = xpr.iterateNext()) {
-        remList = handleIndents(rem);
-        remCell.appendChild(remList);
-    }
-    if (remCell.firstChild) {
-        remRow.classList.remove("gone");
-    }
+    return handleIndentsInElement(entree, "REMARQUE");
 }
 
 /*
  * Traite l'étymologie d'une définition
  */
 
-function handleEtymoligie(entree, tbody)
+function handleEtymoligie(entree)
 {
-    var etyRow = tbody.getElementsByClassName("etymologie")[0];
-    var etyCell = etyRow.getElementsByTagName("td")[1];
-    var xpr = document.evaluate(
-        "./rubrique[@nom='ÉTYMOLOGIE']",
-        entree,
-        null,
-        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-        null
-    );
-    // Itère sur les étymologies
-    var etyList;
-    for (var ety = xpr.iterateNext(); ety; ety = xpr.iterateNext()) {
-        etyList = handleIndents(ety);
-        etyCell.appendChild(etyList);
-    }
-    if (etyCell.firstChild) {
-        etyRow.classList.remove("gone");
-    }
+    return handleIndentsInElement(entree, "ÉTYMOLOGIE");
 }
 
 /*
  * Traite l'historique d'une définition
  */
 
-function handleHistorique(entree, tbody)
+function handleHistorique(entree)
 {
-    var hisRow = tbody.getElementsByClassName("historique")[0];
-    var hisCell = hisRow.getElementsByTagName("td")[1];
-    var xpr = document.evaluate(
-        "./rubrique[@nom='HISTORIQUE']",
-        entree,
-        null,
-        XPathResult.ORDERED_NODE_ITERATOR_TYPE,
-        null
-    );
-    // Itère sur les étymologies
-    var hisList;
-    for (var his = xpr.iterateNext(); his; his = xpr.iterateNext()) {
-        hisList = handleIndents(his);
-        hisCell.appendChild(hisList);
-    }
-    if (hisCell.firstChild) {
-        hisRow.classList.remove("gone");
-    }
+    return handleIndentsInElement(entree, "HISTORIQUE");
 }
 
 /*
  * Traite les supplément au dictionnaire.
+ * TODO contient parfois des variantes
  */
 
 function handleSupplements(entree, tbody)
@@ -246,31 +244,31 @@ function handleSupplements(entree, tbody)
 }
 
 /*
- * Parcours les variantes d'une entrée et les représente au sein d'une table,
- * représentée ici par son corps "tbody".
+ * Parcours les variantes d'une entrée et les retourne sous la forme d'une liste
+ * HTML <ol>.
+ * TODO ne pas utiliser getElementsByTagName (variantes dans SUPPLEMENTS AU DICT)
  */
 
-function handleVariantes(corps, tbody)
+function handleVariantes(entree, tbody)
 {
-    var variantes = corps.getElementsByTagName("variante");
-    var varRow = tbody.getElementsByClassName("variantes")[0];
-    var varCell = varRow.getElementsByTagName("td")[1];
-    var olVar = document.createElement("ol"), liDef;
+    var variantes = entree.getElementsByTagName("variante");
+    
+    var olVar = null, liDef;
     var label;
     var indentsUl, indentLi, cits, citsUl;
 
-    olVar.classList.add("foldable");
-    
     // Boucle sur les variantes de la définition
     for (var i=0, variante; i < variantes.length; ++i) {
         variante = variantes[i];
+        if (!olVar) {
+            olVar = document.createElement("ol");
+            olVar.classList.add("foldable");
+        }
         liDef = document.createElement("li");
-        
         // Le libellé de la variante peut être contenu dans un ensemble de
         // noeuds et de noeuds texte, situés les uns derrière les autres
-        label = getRootText(variante, ["semantique"]);
+        label = getRootText(variante, ["semantique", "nature"]);
         liDef.appendChild(document.createTextNode(label));
-
         // Traite les éventuelles citations
         cits = getCitations(variante);
         if (cits.length > 0) {
@@ -281,13 +279,11 @@ function handleVariantes(corps, tbody)
             }
             liDef.appendChild(citsUl);
         }
-
         // Récupère les indentations
         indentsUl = handleIndents(variante);
         if (indentsUl) {
             liDef.appendChild(indentsUl)
         }
-
         // Active le dépliement des sous-listes
         if (liDef.childElementCount > 0) {
             liDef.addEventListener("click", function(e) {
@@ -300,11 +296,7 @@ function handleVariantes(corps, tbody)
         }
         olVar.appendChild(liDef);
     }
-    
-    varCell.appendChild(olVar);
-    if (variantes.length > 0) {
-        varRow.classList.remove("gone");
-    }
+    return olVar;
 }
 
 /*
