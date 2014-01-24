@@ -63,6 +63,11 @@ def handle(self, data):
         elif token == "context":
             # Demande de contexte autours d'un verset
             handleContextRequest(self, data, resp)
+            # La demande de comparaison est adjointe "à la volée"
+            if "cmp" in data:
+                # Relance la sélection sur la seconde traduction
+                data["tra"] = data["cmp"]
+                handleContextRequest(self, data, resp)
         elif token == "dictionnary":
             # Demande de définition d'un mot
             handleDictionnaryRequest(self, data, resp)
@@ -92,10 +97,15 @@ def handleContextRequest(self, data, resp):
     """
     Traite une requête de contexte : parcours toutes les références voisines à
     la référence donnée en paramètre (clée "ref").
-    Retourne un dictionnaire de la forme "livre > chapitre > verset" sous la
-    clée "res" du dictionnaire "data".
+    Retourne un dictionnaire de la forme:
+      + traduction
+      +--- livre
+      +------- chapitre
+      +----------- verset
+    sous la clée "res" du dictionnaire "data".
     """
     parser = get_bible_parser(self, data)
+    parser.clean()
     # sélectionne la référence principale et son contexte
     parser.add_contextual_reference(data["ref"], context_size, context_size)
     # itère sur les versets correspondants
@@ -106,7 +116,10 @@ def handleContextRequest(self, data, resp):
         if reference.chapter_low not in references[reference.book]:
             references[reference.book][reference.chapter_low] = {}
         references[reference.book][reference.chapter_low][reference.verse_low] = verse
-    resp["res"] = references
+    # retourne les références encapsulées dans leur traduction
+    if not "res" in resp:
+        resp["res"] = {}
+    resp["res"][data["tra"]] = references
 
 
 def handleSearchRequest(self, data, resp):
@@ -117,6 +130,7 @@ def handleSearchRequest(self, data, resp):
     dictionnaire "data".
     """
     parser = get_bible_parser(self, data)
+    parser.clean()
     # correspondance avec des mots-entiers
     if "bou" in data:
         parser.set_word_boundary(data["bou"])

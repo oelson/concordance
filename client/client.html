@@ -73,10 +73,12 @@
             <td id="left" class="noscroll">
                 <form id="filtre">
                     <table>
-                    <tbody>
+                    <thead>
                         <tr>
                             <th colspan="2">Rechercher des versets&hellip;</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         <tr>
                             <td><label for="choix_traduction">traduction à utiliser&nbsp;:</label></td>
                             <td>
@@ -202,17 +204,39 @@
                             <td><label for="filtre_mot">mot entier&nbsp;:</label></td>
                             <td><input name="mot" id="filtre_mot" type="checkbox" checked="checked" /></td>
                         </tr>
+                    </tbody>
+                    </table>
+                </form>
+                <!-- Options -->
+                <form name="options">
+                    <table>
+                    <thead>
                         <tr>
-                            <td colspan="2">
-                                <button id="lancer" disabled="disabled">Rechercher</button>
-                                <button type="button" id="reinitialiser">Réinitialiser</button>
-                                <button type="button" id="effacer" disabled="disabled">Effacer</button>
-                                <img id="spinner" src="res/img/spinner.gif" width="16" height="16"/>
+                            <th colspan="2">Options&hellip;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><label for="activer-comp-traduction">comparer le texte dans une autre traduction&nbsp;:</label></td>
+                            <td><input type="checkbox" name="activer_comp_traduction" id="activer-comp-traduction"/></td>
+                        </tr>
+                        <tr>
+                            <td>traduction de comparaison&nbsp;:</td>
+                            <td>
+                                <select name="traduction_comp" disabled>
+                                    <option value="Darby">John Nelson Darby</option>
+                                    <option value="LS10">Louis-Second 1910</option>
+                                </select>
                             </td>
                         </tr>
                     </tbody>
                     </table>
                 </form>
+                <!-- Contrôles -->
+                <button form="filtre" id="lancer" disabled="disabled">Rechercher</button>
+                <button type="button" id="reinitialiser">Réinitialiser</button>
+                <button type="button" id="effacer" disabled="disabled">Effacer</button>
+                <img id="spinner" src="res/img/spinner.gif" width="16" height="16"/>
             </td>
             <!-- barre de redimensionnement horizontale -->
             <td id="horizontal-resize">
@@ -256,8 +280,18 @@
                         <td id="bottom" class="no-height">
                             <!-- Contexte d'un verset -->
                             <section id="context" class="relative scroll v-expand">
-                                <!-- Conteneur réel du texte -->
-                                <section id="context-container"></section>
+                                <section id="context-container">
+                                    <table id="translation-comparator">
+                                        <tbody>
+                                            <tr>
+                                                <!-- Zone de contexte pour la traduction principale -->
+                                                <td></td>
+                                                <!-- Zone de contexte pour la traduction de comparaison -->
+                                                <td class="gone"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </section>
                                 <!-- Boîte de dialogue flechée -->
                                 <section id="arrow-box" class="hidden">
                                     <section id="arrow-box-button-list">
@@ -271,9 +305,7 @@
                             <!-- Statistiques autours d'une recherche -->
                             <section id="statistique" class="scroll v-expand gone"></section>
                             <!-- Définition d'un mot -->
-                            <section id="dictionnary" class="scroll v-expand gone">
-                                
-                            </section>
+                            <section id="dictionnary" class="scroll v-expand gone"></section>
                         </td>
                     </tr>
                 </tbody>

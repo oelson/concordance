@@ -133,6 +133,7 @@ function addVerseToSearchList(ref, verse)
         td2 = document.createElement("td");
     var tbody = resultTable.tBodies[0];
     var a = document.createElement("a");
+    // effectue une demande de contexte
     a.addEventListener("click", function(e) {
         requestServerForContext(ref);
         if (activeReferenceLink) {

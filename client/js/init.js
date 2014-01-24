@@ -33,6 +33,7 @@
 
 var bookListOl,
     filterForm,
+    optionForm,
     resultTable,
     filterBar,
     referenceSection,
@@ -51,8 +52,6 @@ var bookListOl,
     contextTab,
     statistiqueTab,
     dictionnaryTab,
-    contextSection,
-    contextContainerSection,
     statistiqueSection,
     dictionnarySection,
     termeModelTable,
@@ -62,8 +61,7 @@ var bookListOl,
 
 var selectedReferences  = {};
 
-var searchVerseList  = {},
-    contextVerseList = {};
+var searchVerseList  = {};
 
 var lastTimestampReceived = null;
 var connectInterval = null;
@@ -108,6 +106,7 @@ function findElementsByIds()
 {
     bookListOl = document.getElementById("book_list");
     filterForm = document.forms["filtre"];
+    optionForm = document.forms["options"];
     resultTable = document.getElementById("resultats_recherche");
     launchButton = document.getElementById("lancer");
     cleanButton = document.getElementById("effacer");
@@ -126,12 +125,10 @@ function findElementsByIds()
     contextTab = document.getElementById("tab-context");
     statistiqueTab = document.getElementById("tab-stat");
     dictionnaryTab = document.getElementById("tab-dict");
-    // Contexte d'un verset
-    contextSection = document.getElementById("context");
-    contextContainerSection = document.getElementById("context-container");
+    // Statistiques d'une recherche
     statistiqueSection = document.getElementById("statistique");
-    dictionnarySection = document.getElementById("dictionnary");
     // Dictionnaire
+    dictionnarySection = document.getElementById("dictionnary");
     termeModelTable = document.getElementById("terme-model");
     termeModelTable.removeAttribute("id");
     // Boîte de dialogue fléchée

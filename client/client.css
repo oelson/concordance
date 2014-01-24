@@ -375,7 +375,6 @@ td#bottom
 
 section#context
 {
-    padding: 8px;
     font-family: RobotoSlab;
     text-align: justify;
     max-width: 100%;
@@ -387,6 +386,7 @@ section#context
 
 section#context h1
 {
+    font-size: 1.25em;
     font-weight: 700;
     color: #B9B9B9;
 }
@@ -397,6 +397,7 @@ section#context h1
 
 section#context h2
 {
+    font-size: 1.125em;
     font-weight: 400;
     color: #7C7C7C;
 }
@@ -421,6 +422,11 @@ section#context span
 section#context blockquote
 {
     display: inline;
+}
+
+section#context table
+{
+    border-spacing: 10px 0;
 }
 
 /*

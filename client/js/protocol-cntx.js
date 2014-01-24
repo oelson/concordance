@@ -22,6 +22,204 @@
  *  MA 02110-1301, USA.
  */
 
+var compareTranslationCheckbox;
+var contextSection;
+var contextContainerSection;
+var translationCompTable;
+var referenceTranslationCell;
+var compareTranslationCell;
+
+/*
+ * Manipulations DOM.
+ */
+
+document.addEventListener("DOMContentLoaded", function() {
+    // case à cocher (dés)activant la comparaison de traductions
+    compareTranslationCheckbox = document.getElementById("activer-comp-traduction");
+    compareTranslationCheckbox.addEventListener("click", toggleTranslationCompare, false);
+    // sélection de la traduction de comparaison
+    optionForm.elements["traduction_comp"].addEventListener("change", changeCompareTranslation, false);
+    // noeuds relatifs au contexte
+    contextSection = document.getElementById("context");
+    contextContainerSection = document.getElementById("context-container");
+    translationCompTable = document.getElementById("translation-comparator");
+    var cells = translationCompTable.getElementsByTagName("td");
+    referenceTranslationCell = cells[0];
+    compareTranslationCell = cells[1];
+}, false);
+
+// Traduction de comparaison (relativement à celle utilisée lors de la
+// recherche). Si nulle, aucune comparaison n'est effectuée.
+var compareTranslation = null;
+
+// Liste de références (et leur texte) _actuellement_ affichées dans la zone
+// de contexte.
+var displayedContextList;
+
+/*
+ * Retourne vrai ou faux selon que le contexte d'un verset est déjà affiché ou
+ * non.
+ */
+
+function isContextDisplayed()
+{
+    var i=0;
+    for (var translation in displayedContextList) {
+        ++i;
+    }
+    return i > 0;
+}
+
+/*
+ * Met à jour la liste des traductions de comparaison en fonction de la
+ * traduction actuellement sélectionnée.
+ */
+
+function enableTranslationCompare()
+{
+    // Grise les options non-valides
+    var tr = filterForm.elements["traduction"].value;
+    var opts = optionForm.elements["traduction_comp"].options;
+    for (var i=0, opt; i < opts.length; ++i) {
+        opt = opts[i];
+        if (opt.value == tr) {
+            opt.disabled = true;
+            // L'option déjà sélectionnée est interdite
+            if (optionForm.elements["traduction_comp"].value == tr) {
+                if (i >= 1) {
+                    // Sélectionne la précédente
+                    optionForm.elements["traduction_comp"].value = opts[i-1].value;
+                } else if (i <= opts.length-1) {
+                    // Sélectionne la suivante
+                    optionForm.elements["traduction_comp"].value = opts[i+1].value;
+                }
+            }
+        } else {
+            opt.disabled = false;
+        }
+    }
+    optionForm.elements["traduction_comp"].disabled = false;
+}
+
+/*
+ * (Dés)active la comparaison des traductions.
+ */
+
+function toggleTranslationCompare()
+{
+    if (this.checked) {
+        enableTranslationCompare();
+        // Pré-sélectionne la première traduction autorisée
+        var opts = optionForm.elements["traduction_comp"].options;
+        for (var i=0, opt; i < opts.length; ++i) {
+            opt = opts[i];
+            if (!opt.disabled) {
+                optionForm.elements["traduction_comp"].value = opt.value;
+                compareTranslation = opt.value;
+                break;
+            }
+        }
+        requestServerForMoreTranslation();
+    } else {
+        disableTranslationCompare();
+    }
+}
+
+/*
+ * Ferme la comparaison de traductions.
+ */
+
+function disableTranslationCompare()
+{
+    optionForm.elements["traduction_comp"].disabled = true;
+    compareTranslation = null;
+}
+
+/*
+ * Sélectionne une autre traduction de comparaison.
+ */
+
+function changeCompareTranslation(e)
+{
+    compareTranslation = this.value;
+}
+
+/*
+ * Parcours la liste des versets individuels pour bâtir une référence
+ * "englobante".
+ * Retourne une liste d'objets "Reference".
+ */
+
+function buildReferenceFromList(list)
+{
+    var refs = [], r;
+    var verseLow, verseHgh;
+    for (var translation in list) {
+        for (var bookName in list[translation]) {
+            for (var chapter in list[translation][bookName]) {
+                // Construit l'intervalle des versets dans ce chapitre
+                verseLow = 1;
+                verseHgh = 1;
+                for (var verse in list[translation][bookName][chapter]) {
+                    if (verse < verseLow) {
+                        verseLow = verse;
+                    }
+                    if (verse > verseHgh) {
+                        verseHgh = verse;
+                    }
+                }
+                r = new Reference();
+                r.book = bookName;
+                r.chapterRange["low"] = chapter;
+                r.verseRange["low"] = verseLow;
+                r.verseRange["high"] = verseHgh;
+                refs.push(r.serialize());
+            }
+        }
+        // Retourne la liste des versets de la première traduction uniquement
+        return refs;
+    }
+}
+
+/*
+ * Procède à une demande de versets pour afficher une comparaison de
+ * traductions.
+ */
+
+function requestServerForMoreTranslation()
+{
+    if (!s) {
+        console.error("websocket not available");
+        return;
+    }
+    if (!compareTranslation) {
+        console.error("no comparison translation selected");
+        return;
+    }
+    if (!isContextDisplayed()) {
+        console.error("no context displayed");
+        return;
+    }
+    if (!isContextDisplayed()) {
+        console.error("no context displayed");
+        return;
+    }
+    if (!lastContextualQueryReference) {
+        console.error("no contextual reference selected");
+        return;
+    }
+    var dict = {
+        "now": new Date().getTime(),
+        // utilise comme référence centrale celle qui avait été sélectionnée
+        "ref": lastContextualQueryReference.serialize(),
+        "tok": "context",
+        // utilise la traduction alternative
+        "tra": compareTranslation
+    };
+    var jsonData = JSON.stringify(dict);
+    s.send(jsonData);
+}
+
 /*
  * Procède à une demande de versets basée sur le contexte.
  */
@@ -29,7 +227,7 @@
 function requestServerForContext(ref)
 {
     if (!s) return;
-    // Sauve la référence pour pouvoir mettre en surbrillance son texte après
+    // Sauve la référence pour pouvoir mettre en surbrillance son texte
     var r = new Reference(ref);
     r.parse();
     lastContextualQueryReference = r;
@@ -39,6 +237,10 @@ function requestServerForContext(ref)
         "tok": "context",
         "tra": lastTranslationUsed
     };
+    // Ajoute en même temps une demande de comparaison de traduction
+    if (compareTranslation) {
+       dict["cmp"] = compareTranslation;
+    }
     var jsonData = JSON.stringify(dict);
     s.send(jsonData);
 }
@@ -46,21 +248,48 @@ function requestServerForContext(ref)
 /*
  * Fonction de manipulation des réponses du serveur concernant les demandes de
  * contexte.
+ * Les données sont structurées comme suit:
+ *
+ * + traduction
+ * +--- livre
+ * +------- chapitre
+ * +----------- verset
+ *
  */
 
 function handleContextResponse(res)
 {
-    cleanContextList();
+    console.log(res)
+    displayedContextList = {};
     var text;
-    for (var bookName in res) {
-        addBookToContextList(bookName);
-        for (var chapter in res[bookName]) {
-            addChapterToContextList(chapter);
-            for (var verse in res[bookName][chapter]) {
-                text = res[bookName][chapter][verse];
-                addVerseToContextList(bookName, chapter, verse, text);
+    for (var translation in res) {
+        if (translation == lastTranslationUsed) {
+            referenceTranslationCell.clear();
+        }
+        if (translation == compareTranslation) {
+            compareTranslationCell.clear();
+        }
+        for (var bookName in res[translation]) {
+            addBookToContextList(translation, bookName);
+            for (var chapter in res[translation][bookName]) {
+                addChapterToContextList(translation, chapter);
+                for (var verse in res[translation][bookName][chapter]) {
+                    text = res[translation][bookName][chapter][verse];
+                    addVerseToContextList(
+                        translation,
+                        bookName,
+                        chapter,
+                        verse,
+                        text
+                    );
+                }
             }
         }
+    }
+    if (compareTranslationCell.firstChild) {
+        compareTranslationCell.classList.remove("gone");
+    } else {
+        compareTranslationCell.classList.add("gone");
     }
     showContextTab();
     // à cet instant, cette variable désigne le noeud <blockquote> du verset
@@ -72,36 +301,56 @@ function handleContextResponse(res)
 }
 
 /*
+ * Retourne vrai ou faux selon que la traduction passée en argument est celle
+ * qui est principalement utilisée (pour la recherche).
+ */
+
+function isReferenceTranslation(tr)
+{
+    return (tr == lastTranslationUsed);
+}
+
+/*
  * Ajoute un nom de livre à la fin de la section de lecture.
    TODO Il faut afficher les psaumes et les proverbes différement
  */
 
-function addBookToContextList(bookName)
+function addBookToContextList(translation, bookName)
 {
     var h1 = document.createElement("h1");
     h1.appendChild(document.createTextNode(bookName));
-    contextContainerSection.appendChild(h1);
+    // Ajoute le chapitre à la cellule correspondant à la traduction initiale
+    // ou de comparaison
+    if (isReferenceTranslation(translation)) {
+        referenceTranslationCell.appendChild(h1);
+    } else {
+        compareTranslationCell.appendChild(h1);
+    }
 }
 
 /*
  * Ajoute un numéro de chapitre à la fin de la section de lecture.
  */
 
-function addChapterToContextList(chapter)
+function addChapterToContextList(translation, chapter)
 {
     var h2 = document.createElement("h2");
     h2.appendChild(document.createTextNode(chapter));
-    contextContainerSection.appendChild(h2);
+    // Ajoute le chapitre à la cellule correspondant à la traduction initiale
+    // ou de comparaison
+    if (isReferenceTranslation(translation)) {
+        referenceTranslationCell.appendChild(h2);
+    } else {
+        compareTranslationCell.appendChild(h2);
+    }
 }
 
 /*
  * Ajoute un verset à la lecture contextuelle (panneau du bas).
  */
 
-function addVerseToContextList(book, chapter, verse, text)
+function addVerseToContextList(translation, book, chapter, verse, text)
 {
-    // sauvegarde indépendante du DOM
-    contextVerseList[verse] = text;
     var span = document.createElement("span");
     span.appendChild(document.createTextNode(" "+verse+" "));
     var q = document.createElement("blockquote");
@@ -120,27 +369,48 @@ function addVerseToContextList(book, chapter, verse, text)
     q.appendChild(span);
     q.appendChild(textNode);
     // Sélection d'une partie de texte à la souris
-    q.addEventListener("mouseup", function() {
-        var selectionObj = window.getSelection();
-        var word = getSelectedWord(selectionObj);
-        if (word) {
-            showArrowBox(selectionObj, word);
-        } else {
-            hideArrowBox();
-        }
-    }, false);
-    contextContainerSection.appendChild(q);
+    q.addEventListener("mouseup", checkSelectedWord, false);
+    // Ajoute le verset à la cellule correspondant à la traduction initiale ou
+    // de comparaison
+    if (translation == lastTranslationUsed) {
+        referenceTranslationCell.appendChild(q);
+    } else {
+        compareTranslationCell.appendChild(q);
+    }
+    // Conserve une copie de la référence
+    logContextualVerse(translation, book, chapter, verse, text);
 }
 
 /*
- * Vide le panneau de lecture contextuelle.
+ * Conserve une copie du contexte affiché.
  */
 
-function cleanContextList()
+function logContextualVerse(translation, book, chapter, verse, text)
 {
-    contextVerseList = {};
-    while (contextContainerSection.childElementCount > 0) {
-        contextContainerSection.removeChild(contextContainerSection.firstElementChild);
+    if (!(translation in displayedContextList)) {
+        displayedContextList[translation] = {};
+    }
+    if (!(book in displayedContextList[translation])) {
+        displayedContextList[translation][book] = {};
+    }
+    if (!(chapter in displayedContextList[translation][book])) {
+        displayedContextList[translation][book][chapter] = {};
+    }
+    displayedContextList[translation][book][chapter][verse] = text;
+}
+
+/*
+ * Vérifie si un mot a été sélectionné; si oui, affiche la boîte flechée.
+ */
+
+function checkSelectedWord()
+{
+    var selectionObj = window.getSelection();
+    var word = getSelectedWord(selectionObj);
+    if (word) {
+        showArrowBox(selectionObj, word);
+    } else {
+        hideArrowBox();
     }
 }
 
