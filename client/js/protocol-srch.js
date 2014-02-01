@@ -22,6 +22,24 @@
  *  MA 02110-1301, USA.
  */
 
+/*
+ * Manipulations DOM.
+ */
+
+window.addEventListener("DOMContentLoaded", function() {
+    filterForm.elements["traduction"].addEventListener("change", refTranslationChange, false);
+}, false);
+
+/*
+ * Changement de traduction de référence.
+ */
+
+function refTranslationChange()
+{
+    updateAllowedCmpTranslations();
+    preSelectCmpTranslation();
+}
+
 /* 
  * Envoi une requête de recherche de versets.
  */

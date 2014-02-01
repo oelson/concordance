@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
     compareTranslationCheckbox = document.getElementById("activer-comp-traduction");
     compareTranslationCheckbox.addEventListener("click", toggleTranslationCompare, false);
     // sélection de la traduction de comparaison
-    optionForm.elements["traduction_comp"].addEventListener("change", changeCompareTranslation, false);
+    optionForm.elements["traduction_comp"].addEventListener("change", cmpTranslationChange, false);
     // noeuds relatifs au contexte
     contextSection = document.getElementById("context");
     contextContainerSection = document.getElementById("context-container");
@@ -75,7 +75,7 @@ function isContextDisplayed()
  * traduction actuellement sélectionnée.
  */
 
-function enableTranslationCompare()
+function updateAllowedCmpTranslations()
 {
     // Grise les options non-valides
     var tr = filterForm.elements["traduction"].value;
@@ -98,7 +98,6 @@ function enableTranslationCompare()
             opt.disabled = false;
         }
     }
-    optionForm.elements["traduction_comp"].disabled = false;
 }
 
 /*
@@ -108,28 +107,48 @@ function enableTranslationCompare()
 function toggleTranslationCompare()
 {
     if (this.checked) {
-        enableTranslationCompare();
-        // Pré-sélectionne la première traduction autorisée
-        var opts = optionForm.elements["traduction_comp"].options;
-        for (var i=0, opt; i < opts.length; ++i) {
-            opt = opts[i];
-            if (!opt.disabled) {
-                optionForm.elements["traduction_comp"].value = opt.value;
-                compareTranslation = opt.value;
-                break;
-            }
-        }
+        enableTraCmpSelect();
+        updateAllowedCmpTranslations();
+        preSelectCmpTranslation();
         requestServerForMoreTranslation();
     } else {
-        disableTranslationCompare();
+        disableTraCmpSelect();
+        hideCmpTranslation();
     }
 }
 
 /*
- * Ferme la comparaison de traductions.
+ * Pré-sélectionne la première traduction de comparaison autorisée.
  */
 
-function disableTranslationCompare()
+function preSelectCmpTranslation()
+{
+    var opts = optionForm.elements["traduction_comp"].options;
+    for (var i=0, opt; i < opts.length; ++i) {
+        opt = opts[i];
+        if (!opt.disabled) {
+            optionForm.elements["traduction_comp"].value = opt.value;
+            compareTranslation = opt.value;
+            break;
+        }
+    }
+}
+
+/*
+ * Autorise la sélection d'une traduction de comparaison.
+ */
+
+function enableTraCmpSelect()
+{
+    optionForm.elements["traduction_comp"].disabled = false;
+}
+
+
+/*
+ * Empêche de sélectionner une traduction de comparaison.
+ */
+
+function disableTraCmpSelect()
 {
     optionForm.elements["traduction_comp"].disabled = true;
     compareTranslation = null;
@@ -139,7 +158,7 @@ function disableTranslationCompare()
  * Sélectionne une autre traduction de comparaison.
  */
 
-function changeCompareTranslation(e)
+function cmpTranslationChange(e)
 {
     compareTranslation = this.value;
 }
@@ -259,7 +278,6 @@ function requestServerForContext(ref)
 
 function handleContextResponse(res)
 {
-    console.log(res)
     displayedContextList = {};
     var text;
     for (var translation in res) {
@@ -286,10 +304,10 @@ function handleContextResponse(res)
             }
         }
     }
-    if (compareTranslationCell.firstChild) {
-        compareTranslationCell.classList.remove("gone");
+    if (compareTranslation && compareTranslationCell.firstChild) {
+        displayCmpTranslation();
     } else {
-        compareTranslationCell.classList.add("gone");
+        hideCmpTranslation();
     }
     showContextTab();
     // à cet instant, cette variable désigne le noeud <blockquote> du verset
@@ -487,4 +505,24 @@ function showArrowBox(selectionObj, word)
 function hideArrowBox()
 {
     arrowBoxSection.classList.add("hidden");
+}
+
+/*
+ * Affiche la traduction de comparaison.
+ */
+
+function displayCmpTranslation()
+{
+    compareTranslationCell.classList.remove("gone");
+    translationCompTable.tHead.classList.remove("gone");
+}
+
+/*
+ * Masque la traduction de comparaison.
+ */
+
+function hideCmpTranslation()
+{
+    compareTranslationCell.classList.add("gone");
+    translationCompTable.tHead.classList.add("gone");
 }
