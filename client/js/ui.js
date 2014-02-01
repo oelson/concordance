@@ -273,21 +273,6 @@ function handleMinMaxValuesChange(e)
 }
 
 /*
- * Gestion des onglets du bas : onglet de lecture contextuelle.
- */
-
-function showContextTab()
-{
-    if (!bottomBar.style.height) {
-        bottomBar.style.height = "50%";
-    }
-    dictionnaryTab.classList.remove("selected");
-    contextTab.classList.add("selected");
-    contextSection.classList.remove("gone");
-    dictionnarySection.classList.add("gone");
-}
-
-/*
  * Gestion des onglets du bas : onglet du dictionnaire.
  */
 

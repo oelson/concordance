@@ -190,7 +190,7 @@ function init()
     // Nettoyage des résultats de la recherche
     cleanButton.addEventListener("click", function(e) {
         cleanSearchList();
-        cleanContextList();
+        cleanContextSection();
     }, false);
     // Redimensionnement vertical
     verticalResizeBar.addEventListener("mousedown", initVerticalResize, false);

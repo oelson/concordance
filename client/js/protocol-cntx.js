@@ -526,3 +526,44 @@ function hideCmpTranslation()
     compareTranslationCell.classList.add("gone");
     translationCompTable.tHead.classList.add("gone");
 }
+
+/*
+ * Sélectionne l'onglet de lecture contextuelle.
+ */
+
+function showContextTab()
+{
+    if (!bottomBar.style.height) {
+        bottomBar.style.height = "50%";
+    }
+    dictionnaryTab.classList.remove("selected");
+    contextTab.classList.add("selected");
+    contextSection.classList.remove("gone");
+    dictionnarySection.classList.add("gone");
+}
+
+/*
+ * Clos l'onglet de lecture contextuelle.
+ */
+
+
+function hideContextTab()
+{
+    if (bottomBar.style.height) {
+        bottomBar.style.height = "";
+    }
+    contextTab.classList.remove("selected");
+    contextSection.classList.add("gone");
+}
+
+/*
+ * Efface et masque tout ce qui est relatif au contexte d'un verset.
+ */
+
+function cleanContextSection()
+{
+    hideCmpTranslation();
+    referenceTranslationCell.clear();
+    compareTranslationCell.clear();
+    hideContextTab();
+}
