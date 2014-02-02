@@ -107,3 +107,76 @@ function handleSearchResponse(res)
     }
     toggleCleanButton();
 }
+
+/*
+ * Affichage des références ayant correspondu à la recherche
+ */
+
+function addVerseToSearchList(ref, verse)
+{
+    var tr  = document.createElement("tr");
+    var td1 = document.createElement("td"),
+        td2 = document.createElement("td");
+    var tbody = resultTable.tBodies[0];
+    var a = document.createElement("a");
+    // effectue une demande de contexte
+    a.addEventListener("click", function(e) {
+        requestServerForContext(ref);
+        if (activeReferenceLink) {
+            activeReferenceLink.classList.remove("active");
+        }
+        this.classList.add("active");
+        activeReferenceLink = this;
+    }, false);
+    a.classList.add("decore-hover");
+    a.appendChild(document.createTextNode(ref));
+    td1.appendChild(a);
+    var q = highlightMatches(verse);
+    td2.appendChild(q);
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+    searchVerseList[ref] = verse;
+    resultTable.classList.remove("gone");
+}
+
+/*
+ * Surbrillance des résultats. Les mots correspondants à la recherche reviennent
+ * encadrés par des tirets bas '_'.
+ * La balise <mark> comporte, dans la spécification HTML5, les mêmes propriétés
+ * d'affichage que la recherche native du navigateur web.
+ */
+
+function highlightMatches(s)
+{
+    var q = document.createElement("blockquote"), e;
+    var pairs = s.split("_");
+    for (var i=0; i < pairs.length; ++i) {
+        // texte inchangé
+        t = document.createTextNode(pairs[i]);
+        // texte encadré
+        if (i%2) {
+            e = document.createElement("mark");
+            e.appendChild(t);
+        } else {
+            e = t;
+        }
+        q.appendChild(e);
+    }
+    return q;
+}
+
+/*
+ * Efface tous les versets affichés.
+ */
+
+function cleanSearchList()
+{
+    searchVerseList = {};
+    var tbody = resultTable.tBodies[0];
+    while (tbody.childElementCount > 1) {
+        tbody.removeChild(tbody.lastChild);
+    }
+    resultTable.classList.add("gone");
+    toggleCleanButton();
+}
