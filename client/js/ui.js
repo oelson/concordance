@@ -262,18 +262,3 @@ function handleMinMaxValuesChange(e)
         }
     }
 }
-
-/*
- * Gestion des onglets du bas : onglet du dictionnaire.
- */
-
-function showDictionnaryTab()
-{
-    if (!bottomBar.style.height) {
-        bottomBar.style.height = "50%";
-    }
-    contextTab.classList.remove("selected");
-    dictionnaryTab.classList.add("selected");
-    contextSection.classList.add("gone");
-    dictionnarySection.classList.remove("gone");
-}

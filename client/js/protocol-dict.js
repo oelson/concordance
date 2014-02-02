@@ -451,6 +451,34 @@ function getCitations(parent)
 }
 
 /*
+ * Affiche l'onglet du dictionnaire.
+ */
+
+function showDictionnaryTab()
+{
+    if (!bottomBar.style.height) {
+        bottomBar.style.height = "50%";
+    }
+    contextTab.classList.remove("selected");
+    dictionnaryTab.classList.add("selected");
+    contextSection.classList.add("gone");
+    dictionnarySection.classList.remove("gone");
+}
+
+/*
+ * Masque l'onglet du dictionnaire.
+ */
+
+function hideDictionnaryTab()
+{
+    if (bottomBar.style.height) {
+        bottomBar.style.height = "";
+    }
+    dictionnaryTab.classList.remove("selected");
+    dictionnarySection.classList.add("gone");
+}
+
+/*
  * Nettoie la section du dictionnaire.
  */
 
