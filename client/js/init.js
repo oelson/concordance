@@ -191,6 +191,7 @@ function init()
     cleanButton.addEventListener("click", function(e) {
         cleanSearchList();
         cleanContextSection();
+        cleanDictionnarySection();
     }, false);
     // Redimensionnement vertical
     verticalResizeBar.addEventListener("mousedown", initVerticalResize, false);

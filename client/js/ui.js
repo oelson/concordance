@@ -169,16 +169,6 @@ function cleanSearchList()
     toggleCleanButton();
 }
 
-/*
- * 
- */
-
-function cleanDictionnarySection()
-{
-    if (termeCell.clear()) {
-        termeCell.parentNode.classList.add("gone");
-    }
-}
 
 /*
  * Réinitialise le formulaire:

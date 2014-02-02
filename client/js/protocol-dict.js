@@ -449,3 +449,12 @@ function getCitations(parent)
     
     return listElements;
 }
+
+/*
+ * Nettoie la section du dictionnaire.
+ */
+
+function cleanDictionnarySection()
+{
+    dictionnarySection.clear();
+}
