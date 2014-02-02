@@ -183,6 +183,11 @@ span.reference
     position: relative;
 }
 
+span.reference::selection
+{
+    background: transparent;
+}
+
 span.valid,
 span.delete
 {
