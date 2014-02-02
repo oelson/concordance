@@ -136,12 +136,6 @@ table#layout > tbody > tr > td
     vertical-align: top;
 }
 
-td#head
-{
-    height: 1px;
-    border-bottom: 2px solid rgba(0,0,0,.125);
-}
-
 td#head,
 td#left
 {
@@ -153,6 +147,7 @@ header
     font-size: 1.75em;
     color: grey;
     white-space: nowrap;
+    border-bottom: 1px solid #C6C6C6;
 }
 
 /*
