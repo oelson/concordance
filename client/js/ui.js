@@ -182,6 +182,7 @@ function reinitForm()
 {
     cleanReferenceList();
     filterForm.reset();
+    optionForm.reset();
     localStorage.clear();
     toggleCleanButton();
     toggleLaunchButton();
