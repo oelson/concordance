@@ -203,8 +203,6 @@ function init()
     // Onglets
     contextTab.addEventListener("click", showContextTab, false);
     dictionnaryTab.addEventListener("click", showDictionnaryTab, false);
-    // Retaure éventuellement l'état précédent du formulaire
-    restoreFormState();
     // Obtient la définition du mot sélectionné
     getDefinitionButton.addEventListener("click", function(e) {
         // Le mot sélectionné aura préalablement été sauvé dans l'objet

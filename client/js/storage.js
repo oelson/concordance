@@ -91,5 +91,9 @@ function restoreFormState()
     if ("cpt" in localStorage) {
         optionForm.elements["traduction_comp"].value = localStorage["cpt"];
         optionForm.elements["traduction_comp"].disabled = !optionForm.elements["activer_comp_traduction"].checked;
+        toggleTranslationCompare();
     }
 }
+
+// Retaure éventuellement l'état précédent du formulaire
+document.addEventListener("DOMContentLoaded", restoreFormState, false);

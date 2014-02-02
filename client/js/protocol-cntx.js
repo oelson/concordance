@@ -106,7 +106,7 @@ function updateAllowedCmpTranslations()
 
 function toggleTranslationCompare()
 {
-    if (this.checked) {
+    if (optionForm.elements["activer_comp_traduction"].checked) {
         enableTraCmpSelect();
         updateAllowedCmpTranslations();
         preSelectCmpTranslation();
