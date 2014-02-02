@@ -24,6 +24,7 @@
 
 function saveFormState()
 {
+    // Mots clés & assimilés
     localStorage["tra"] = filterForm.elements["traduction"].value;
     localStorage["all"] = filterForm.elements["conjonction"].value;
     localStorage["one"] = filterForm.elements["quelconque"].value;
@@ -39,6 +40,9 @@ function saveFormState()
         refs.push(r);
     }
     localStorage["ref"] = refs;
+    // Options
+    localStorage["uct"] = optionForm.elements["activer_comp_traduction"].checked;
+    localStorage["cpt"] = optionForm.elements["traduction_comp"].value;
 }
 
 function restoreFormState()
@@ -79,5 +83,13 @@ function restoreFormState()
             s = refs[i];
             addReference(s);
         }
+    }
+    // Options
+    if ("uct" in localStorage) {
+        optionForm.elements["activer_comp_traduction"].checked = (localStorage["uct"] == "true");
+    }
+    if ("cpt" in localStorage) {
+        optionForm.elements["traduction_comp"].value = localStorage["cpt"];
+        optionForm.elements["traduction_comp"].disabled = !optionForm.elements["activer_comp_traduction"].checked;
     }
 }

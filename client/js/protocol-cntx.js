@@ -115,6 +115,7 @@ function toggleTranslationCompare()
         disableTraCmpSelect();
         hideCmpTranslation();
     }
+    saveFormState();
 }
 
 /*
