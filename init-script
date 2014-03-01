@@ -1,0 +1,52 @@
+#! /bin/sh -e
+
+SERVICE="/usr/local/bin/concordance"
+SERVICE_OPT=""
+SERVICEUSER="nelson"
+SERVICE_NAME="concordance"
+
+PATH="/sbin:/bin:/usr/sbin:/usr/bin"
+
+test -x $SERVICE || exit 0
+
+. /lib/lsb/init-functions
+
+d_start () {
+        log_daemon_msg "Starting system service $SERVICE_NAME"
+	BIBLE_XML_DIRECTORY="/home/nelson/Projets/concordance/bible/" XMLITTRE_DIRECTORY="/home/nelson/Projets/concordance/littre/" start-stop-daemon --background --name $SERVICE_NAME --start --quiet --chuid $SERVICEUSER --exec $SERVICE -- $SERVICE_OPT
+        log_end_msg $?
+}
+
+d_stop () {
+        log_daemon_msg "Stopping system service $SERVICE_NAME"
+        start-stop-daemon --name $SERVICE_NAME --stop --retry 5 --quiet --name $SERVICE_NAME
+	log_end_msg $?
+}
+
+case "$1" in
+
+        start|stop)
+                d_${1}
+                ;;
+
+        restart|reload|force-reload)
+                        d_stop
+                        d_start
+                ;;
+
+        force-stop)
+               d_stop
+                killall -q $SERVICE_NAME || true
+                sleep 2
+                killall -q -9 $SERVICE_NAME || true
+                ;;
+
+        status)
+                status_of_proc "$SERVICE_NAME" "$SERVICE" "system-wide $SERVICE_NAME" && exit 0 || exit $?
+                ;;
+        *)
+                echo "Usage: /etc/init.d/$SERVICE_NAME {start|stop|force-stop|restart|reload|force-reload|status}"
+                exit 1
+                ;;
+esac
+exit 0
